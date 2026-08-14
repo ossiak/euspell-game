@@ -9,7 +9,7 @@ Nothing is built yet. This folder currently holds the thinking.
 | Note | What it is |
 | --- | --- |
 | [game-concept.md](game-concept.md) | The design discussion: what a Euspell game is for, the one worth building, and the recommendation not to build a game at all yet |
-| [writing-test.md](writing-test.md) | The conversion drill — convert a paragraph by hand and be scored on it. Paragraph sizing, and the open problems in the spec |
+| [writing-test.md](writing-test.md) | The conversion drill — convert a paragraph by hand and be scored on it. Paragraph sizing, the open problems in the spec, and how to implement it on desktop and mobile |
 | [store-screenshots.md](store-screenshots.md) | The Chrome Web Store screenshot brief, parked here because the demo page may produce the imagery |
 
 | Tool | What it does |

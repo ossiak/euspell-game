@@ -38,6 +38,7 @@ FREQ = EUSPELL / "euspell_yt" / "unigram_freq.csv"
 WORD = re.compile(r"[A-Za-z]+(?:'[A-Za-z]+)*")
 
 BAND = (12, 20)  # the acceptance band, in edits
+PARAGRAPHS, WORDS_PER = 100, 85  # the planned set, for the authoring estimate
 
 
 def load_lexicon():
@@ -185,6 +186,62 @@ def measure_texts(lex, path):
     print("top100 = edits that are reflex words; ctx = words needing a reading decided")
 
 
+def measure_authoring_load(lex):
+    """How many words would actually need distractors written for them?
+
+    The tap-to-choose mode on mobile needs wrong spellings to offer. The
+    tempting reading is "another lexicon" — 13,229 changed types, or worse the
+    whole 205,493. Neither is the job: distractors are only needed for the
+    types that turn up in the chosen paragraphs, and Zipf makes that a much
+    smaller set. Estimated as the expected number of distinct types appearing
+    at least once in PARAGRAPHS x WORDS_PER tokens.
+    """
+    n = PARAGRAPHS * WORDS_PER
+    total = 0
+    rows = []
+    with open(FREQ, encoding="utf-8") as f:
+        for row in csv.reader(f):
+            if len(row) < 2 or row[0] == "word":
+                continue
+            try:
+                count = int(row[1])
+            except ValueError:
+                continue
+            total += count
+            rows.append((row[0], count))
+
+    changed, context = [], []
+    for word, count in rows:
+        entry = lex.get(word)
+        if not entry:
+            continue
+        always, _maybe, ctx = entry
+        p = count / total
+        if always:
+            changed.append(p)
+        if ctx:
+            context.append(p)
+
+    met = lambda pool: sum(1 - (1 - p) ** n for p in pool)
+    print(f"\nauthoring load for {PARAGRAPHS} paragraphs (~{n:,} tokens):")
+    print(f"  changed types in the lexicon   {len(changed):,}")
+    print(f"  ...expected to actually appear ~{met(changed):.0f}   <- need distractors")
+    print(f"  context types expected         ~{met(context):.0f}   <- sibling spelling is free")
+
+    # Where the effort pays: the head of the distribution is tiny.
+    changed.sort(reverse=True)
+    mass = sum(changed)
+    run = 0
+    marks = {}
+    for i, p in enumerate(changed, 1):
+        run += p
+        for target in (0.5, 0.8, 0.9):
+            if target not in marks and run / mass >= target:
+                marks[target] = i
+    print("  types covering a share of all edit instances:", end="")
+    print("".join(f"  {int(t*100)}%={marks[t]:,}" for t in (0.5, 0.8, 0.9)))
+
+
 def top_common(lex, n=100):
     """The n most frequent always-changing words — the 'reflex' set."""
     changes = []
@@ -210,3 +267,4 @@ if __name__ == "__main__":
     else:
         measure_corpus(lexicon)
         measure_context_words(lexicon)
+        measure_authoring_load(lexicon)

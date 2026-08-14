@@ -366,6 +366,154 @@ Gutenberg and record title, author and year per paragraph so attribution is
 possible. Public-domain status is jurisdictional: either stay well back from the
 line or state that the claim is US-PD.
 
+---
+
+## Implementing it
+
+### The decision that makes everything else easy
+
+**Nothing needs the engine or the lexicon at runtime.** The paragraphs are
+stored as original *and* euspell, hand-checked, so scoring is a comparison
+against stored text rather than a conversion. The payload is 100 paragraph pairs
+plus a per-token flag — tens of KB gzipped, against **13 MB for
+`dist/lexicon.data`**. That one fact removes most of the architecture.
+
+(*Beat the classifier* is not the same: showing what the SVM chose does want the
+engine. Worth knowing the two games have different weights before sharing code
+between them.)
+
+**One static page, no framework, no server, no network.** Concretely a plain ES
+module exporting `mount(element, data)`, a stylesheet, and build-generated JSON.
+That form does three jobs at once:
+
+- **Opens standalone** — works offline, trivially screenshotable for the store
+  assets ([store-screenshots.md](store-screenshots.md)).
+- **Embeds in the site** through a short client component that renders a div and
+  calls `mount()` in an effect — the pattern `RespellCycler.tsx` already uses on
+  Next 16 / React 19. Fonts, theme and nav come free.
+- **Survives the static export.** `euspell_website` builds with
+  `output: "export"` onto hosting with no Node runtime, so anything server-side
+  is unavailable — and this design never wants it.
+
+The "no framework" line in [game-concept.md](game-concept.md) meant no Unity, no
+game engine. It was never an argument against the site's existing stack.
+
+**Source it in `euspell_game`, embedded by the site** — not the reverse, which
+makes it awkward to open standalone and couples a demo to a deploy.
+
+### Desktop
+
+**Each word is its own inline editable span — and it must still read as a
+paragraph, not as 85 input boxes.** Borderless spans in normal text flow, focus
+ring only on the word being edited. That buys problem 3's exact scoring without
+turning prose into a form.
+
+- **Punctuation lives outside the span.** `records,` is span(`records`) plus
+  text(`,`). Words are editable; the sentence cannot be broken.
+- **Suppress Enter and rich paste.**
+- **Tab moves word to word** — every word, not only the ones that change, which
+  would leak the answer.
+
+### Mobile
+
+**Autocorrect is an adversary, not an annoyance.** Every euspelling is a
+non-word to the phone's dictionary, so the keyboard undoes the player's work:
+`ov`→`of`, `tu`→`to`, `iz`→`is`. A player who types correctly is marked wrong.
+Set `autocorrect="off" autocapitalize="off" autocomplete="off"
+spellcheck="false"` — then **test on real hardware**, because those attributes
+are honoured unevenly and predictive text is a separate mechanism.
+
+Two smaller traps: input text below **16px triggers iOS auto-zoom** on focus,
+and the on-screen keyboard covers the lower viewport, so the button bar cannot
+sit at the bottom.
+
+**The real problem is that 15 edits is a lot of phone typing**, in unfamiliar
+strings, on a keyboard that fights back. Expect abandonment.
+
+**So give mobile a second mode: tap a word, choose from three or four
+candidates.** Same data, no typing. State plainly that it tests **recognition,
+not production** — the scores are not comparable to the typed mode and must not
+share a number. That is a feature: recognition is the right first rung, and it
+is the mode that will actually get played on a phone.
+
+### Distractors for the tap-to-choose mode
+
+The tempting reading is "a second lexicon of wrong spellings". It is nothing
+like that, because distractors are only needed for the types that appear in the
+chosen paragraphs:
+
+| | |
+| --- | --- |
+| Changed types in the lexicon | 13,229 |
+| **Expected to appear across 100 paragraphs** | **~441** |
+| Context-dependent types expected | ~281 |
+
+Roughly 700 items with overlap, against a 205,493-entry lexicon — and frozen
+alongside the paragraphs. **19 types cover half of all edit instances**, so the
+head of the distribution is where the effort pays and it is tiny.
+
+**Much of it is free.** The traditional spelling is a distractor for every
+changed word, and the most meaningful one — "no change" is the error a beginner
+actually makes. The sibling euspelling covers the context-dependent words
+outright (`records`/`recordz`, `bows`/`buws`/`bowz`/`buwz`), which are also the
+*best* items in the set, since choosing between them is the real skill.
+
+**Generate, then review — do not author.** Hand-writing 900 wrong spellings is
+drudgery and gives inconsistent difficulty. Invert the reform's own graphemes
+and let a script propose: `z↔s`, `qh↔ch`, `uw↔ow/ou`, `y↔igh/i`, doubling.
+These reproduce the misconceptions a learner genuinely has, which is what makes
+a distractor teach rather than merely distract. Then review the output for those
+~441 words.
+
+**One automated check is mandatory:** reject any candidate that appears anywhere
+in that entry's own spelling list. Otherwise `recordz` is eventually offered as
+a wrong answer in a sentence where `recordz` is right, and a correct player is
+marked wrong. A candidate that is a valid euspelling of some *other* word is
+fine — desirable, even.
+
+**The trap that matters more than distractor quality.** If the traditional
+spelling is always on offer and always wrong, players learn *never pick the
+unchanged one*, and the exercise collapses into reading the option list rather
+than knowing the word. The fix is already in the data: **mix in items whose
+correct answer is the unchanged form**, which the context-dependent words supply
+(88% of them carry the original among their options). It is the multiple-choice
+analogue of blue. Vary the option count too, or players learn positional tells.
+
+**The cheap prototype**, if this proves too much up front: draw the wrong options
+from the euspellings of other changed words in the same paragraph. Zero
+authoring, always real euspell, self-scaling — but often obviously wrong on
+length and shape, so items get easy. A sensible middle is one rule-generated,
+one sibling-or-traditional, one from the paragraph. Start there and build the
+reviewed set only if the mode gets played.
+
+**Treat it as project data, not a table inside the game.** It is tied to `r1`
+and needs the same revision stamp as the paragraphs — a spelling is only wrong
+relative to a lexicon. And it has a second use to design for now: the same list
+is what the desktop mode's hover explanation wants, and it could seed a "common
+errors" page on the site.
+
+### The build step earns its keep twice
+
+A script turning the 100 pairs into token JSON has to tokenize and consult the
+lexicon anyway, so have it **diff each stored euspell paragraph against what the
+engine produces**. A hundred hand-checked conversions will contain mistakes;
+this catches them before a player does, using the engine's own tokenizer rather
+than a re-derived one (problem 7). The output is committed data, so the game
+keeps no runtime dependency on `euspell_ext`.
+
+### Consequences to catch now
+
+**The privacy policy needs a line.** It currently states the site stores exactly
+one `localStorage` value, `euspell-theme`. The drill wants a last-paragraph-shown
+memory (problem 9) and probably progress. Still nothing leaving the device, but
+the page has to say so.
+
+**What not to build:** a native app, a PWA with a service worker, server-side
+scoring, or any upload of results. The first two are premature; the last two
+contradict both the privacy page and the reason this design is cheap.
+
+---
+
 ## Before building
 
 **Measure the real 100.** The corpus figures come from web text — `search`,
