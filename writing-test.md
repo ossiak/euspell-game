@@ -235,14 +235,47 @@ This makes blue partly redundant — bold + unchanged + correct says the same
 thing twice — which is deliberate. The redundancy is what keeps the display
 legible when either channel is unavailable.
 
-**Still outstanding: the expected form on hover** — *expected `records` (noun);
-you wrote `recordz` (verb)*. Nothing in the visual scheme can distinguish rows 3
-and 4 of the table above, and it should not try; the colour says wrong, the
-hover teaches.
-
 **It is not a rare case.** 5,911 lexicon entries carry two or more euspellings —
 2.9% of types, but **5.3% of running tokens**, since they skew common (`use`,
 `services`, `read`, `does`, `books`). Expect **~4.5 per 85-word paragraph**.
+
+#### The explanation, on hover
+
+Nothing in the visual scheme distinguishes rows 3 and 4 of the table above, and
+it should not try. **The colour grades; the explanation teaches.** Without it
+the drill is a marking scheme, and the four reds all mean the same thing to the
+player who earned them.
+
+It is also the fix for blue's weakness. Someone who left `records` alone by
+never noticing it gets blue and learns nothing; the explanation says *noun here,
+so unchanged — the verb would be `recordz`*, and the accidental success becomes
+a lesson. That is the highest-value moment in the exercise: the player is looking
+at a word they personally decided about, seconds after deciding it.
+
+| State | What it reveals |
+| --- | --- |
+| Never in play | **Nothing.** Do not make 80% of the page interactive — it is noise, and it invites hunting |
+| Blue | Why it stayed: *"noun here; the verb is `recordz`"* |
+| Green | Light confirmation, and the rule followed |
+| Orange | The expected form and its rule: *"expected `ov`"* |
+| Red | Which of the four errors it was |
+
+The four reds want four different sentences:
+
+- *`cat` never changes* — with the reassurance that four fifths is untouched
+- *expected `records` (noun); you wrote `recordz` (verb)* — the misreading
+- *expected `buwz`; you wrote `bowz`* — wrong member of the set
+- *`rekordz` is not a euspelling of `records`* — an invented form
+
+**Do not write the explanations twice.** The lexicon supplies the expected form
+and `euspell_encoding.csv` supplies each code's meaning — and there is a
+precedent to follow exactly. The extension's popup renders an encoding chip
+whose tooltip is, per its own comment, *"euspell_encoding.csv's own wording,
+shown verbatim — the table is the source of record for what a code means."* Two
+products explaining the same reform in two phrasings is how a standard starts to
+blur.
+
+Interaction and rendering are in [Implementing it](#the-explanation-panel).
 
 ### 5. Blue is right, but it is awarded for inattention
 
@@ -435,6 +468,32 @@ candidates.** Same data, no typing. State plainly that it tests **recognition,
 not production** — the scores are not comparable to the typed mode and must not
 share a number. That is a feature: recognition is the right first rung, and it
 is the mode that will actually get played on a phone.
+
+### The explanation panel
+
+The content is specified in [problem 4](#the-explanation-on-hover). Four
+mechanics decide whether it works:
+
+**It cannot be hover-only.** Touch has no hover. After `Score` the word fields
+are read-only, so tap is free to mean *explain this word* — build **click/tap as
+the mechanism and hover as a desktop fast path**, never the reverse. The spans
+are already focusable, so Tab must reveal the same content: WCAG 1.4.13 also
+requires it be dismissible, hoverable in itself, and persistent, so a tooltip
+that vanishes as the pointer moves toward it fails.
+
+**One panel under the paragraph, not a floating tooltip.** It updates as the
+player moves between words. Identical on both platforms, never clips at the
+viewport edge, no positioning code, room for a full sentence, and a natural
+`aria-live` region. A tooltip is more immediate on desktop and costs all of
+that.
+
+**Never use the `title` attribute.** It is the tempting shortcut and it fails
+three ways at once: about a second of delay, unstyleable, invisible on touch,
+and inconsistently announced by screen readers.
+
+**Inert until `Score`.** `Hint` and `Convert` are already generous (problem 1);
+an explanation that worked while editing would be a third leak and the most
+complete one, handing over the expected form for any word the player pointed at.
 
 ### Distractors for the tap-to-choose mode
 
