@@ -31,6 +31,27 @@ PARAGRAPHS = HERE.parent / "paragraphs"
 SKIP = {"TEMPLATE.md"}
 
 REQUIRED = ["id", "title", "author", "year", "death", "source", "revision", "checked"]
+
+# Words where r1 is known to be wrong, so a paragraph containing one cannot be
+# scored fairly: the drill would mark a reasonable answer incorrect. The lexicon
+# is frozen, so these are avoided rather than fixed — reconsider at r2.
+#
+# Found by comparing British/American pairs against their own families: an
+# unmerged form whose siblings ARE merged is an inconsistency rather than a
+# usage judgement. Deliberate non-merges do not show that pattern — `grey` is
+# left alone because it is common in American prose too, and nothing in its
+# family contradicts it.
+KNOWN_GAPS = {
+    "practise": "should merge to `practice`; `practises` even respells to `practisez`, keeping the British stem",
+    "practises": "respells to `practisez`, which embeds the unmerged British stem",
+    "practised": "should merge to `practiced`",
+    "practising": "should merge to `practicing`",
+    "labouring": "should merge to `laboring` — `labour`, `labours` and `laboured` all do",
+    "finalise": "should merge to `finalize` — `finalised` does",
+    "regularise": "should merge to `regularize` — `regularisation` does",
+    "regularised": "should merge to `regularized` — `regularisation` does",
+    "regularising": "should merge to `regularizing` — `regularisation` does",
+}
 LATEST_PUBLICATION = 1930  # US, 95-year term, as of 2026
 LATEST_DEATH = 1955        # clears life+70 in the UK and EU
 BAND = (12, 20)
@@ -111,6 +132,15 @@ def check_alignment(lex, original, euspell):
     return problems, left
 
 
+def check_known_gaps(words):
+    """Reject a passage containing a word r1 gets wrong."""
+    return [
+        f"contains '{w}' — {KNOWN_GAPS[w.lower()]}; pick another passage"
+        for w in dict.fromkeys(words)
+        if w.lower() in KNOWN_GAPS
+    ]
+
+
 def measure(lex, words, common):
     edits = [w for w in words if (e := lex.get(w.lower())) and e.always_changes]
     context = sum(1 for w in words if (e := lex.get(w.lower())) and e.is_context)
@@ -182,6 +212,7 @@ def main():
             aligned, words = check_alignment(lex, original, euspell)
             problems += aligned
             if words is not None:
+                problems += check_known_gaps(words)
                 stats = measure(lex, words, common)
                 problems += check_band(stats)
 

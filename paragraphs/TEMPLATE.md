@@ -44,6 +44,10 @@ Choosing a passage — the criteria are argued in writing-test.md:
                                      previous paragraph, nobody can decide it
 
   no eye-dialect, no verse, no dialogue fragments
+
+  no word from KNOWN_GAPS in tools/check-paragraphs.py — the handful r1 gets
+  wrong (the `practise` family, `labouring`). The lexicon is frozen, so those
+  passages are avoided rather than fixed; the validator rejects them for you.
 -->
 
 ## traditional

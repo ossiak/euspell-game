@@ -431,9 +431,32 @@ corpus figures predict — and five of them may be *drop the u*, which is the
 top-20 concentration problem on a different axis. Do not build the set from
 British sources alone, and track the merge share per paragraph.
 
-**The merge set is selective**, which a hand-checker must not assume away:
-`grey` and `practise` are `000`, unchanged, while `colour` and `theatre` are
-not.
+**The merge set is selective, and not every gap in it is a mistake.** `grey` is
+left unchanged deliberately — it is common in American prose too, so there is no
+British form to merge away. `practise` is a genuine miss. A hand-checker cannot
+tell those apart by looking, so the distinction is drawn mechanically: **an
+unmerged British form whose own family IS merged is an inconsistency; one with
+no merged siblings is a usage judgement.** Nothing in `grey`'s family
+contradicts it; `labour → labor`, `labours → labors|laborz` and
+`laboured → labord` all merge, which makes `labouring` staying put a hole.
+
+Scanning the two families where the suffix rule is reliable found few, and they
+are listed in `KNOWN_GAPS` in the validator, which rejects any passage
+containing one:
+
+| Word | Why it cannot be scored fairly |
+| --- | --- |
+| `practise`, `practised`, `practising` | should merge to the `-ice`/`-iced`/`-icing` forms |
+| `practises` | worse: respells to **`practisez`**, embedding the unmerged British stem |
+| `labouring` | the only unmerged member of its family |
+| `finalise`, `regularise` and inflections | contradicted by a merged sibling; unlikely in 1930 prose |
+
+**The lexicon is frozen, so these are avoided rather than fixed** — a paragraph
+containing one would mark a reasonable answer wrong. Reconsider at r2. The
+`-ise` scan also turned up 20 unmerged forms that are correctly left alone —
+`advertise`, `surprise`, `comprise`, `braise` — since those take `s` in American
+English too. The sibling test separated them from the real gaps without a human
+reading the list.
 
 ### File format
 
@@ -495,6 +518,7 @@ freeze makes this low-risk today; r2 will not.
    the source data, not the player's.
 4. **The acceptance band**, per the criteria above.
 5. **Front matter complete, and `death` ≤ 1955.**
+6. **No word from `KNOWN_GAPS`** — the handful r1 gets wrong, listed above.
 
 One trap it exists to avoid: the lexicon's fourth column is **overloaded**. For
 the 40 `9xx` abbreviations it holds an expansion, not a respelling — `mr →
