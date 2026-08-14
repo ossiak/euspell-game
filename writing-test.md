@@ -29,15 +29,31 @@ spelling. The player converts it by editing.
 
 All but `Hint` are stateless.
 
-**Legend** — foreground colour on white, default black:
+**Legend** — foreground colour on white, default black. Three channels, because
+one is not enough (problem 6):
 
-| State | Colour |
-| --- | --- |
-| Never needs changing | none |
-| Correctly unchanged | blue |
-| Correctly changed | green |
-| Incorrectly unchanged | orange |
-| Incorrectly changed | red |
+| State | Colour | Hex | Error mark |
+| --- | --- | --- | --- |
+| Never needs changing | none | `#000000` | — |
+| Correctly unchanged | blue | `#1D4ED8` | — |
+| Correctly changed | green | `#15803D` | — |
+| Incorrectly unchanged | orange | `#B45309` | wavy underline |
+| Incorrectly changed | red | `#B91C1C` | wavy underline |
+
+**Plus: context-dependent words are bold, in every state.**
+
+- **Colour** carries the full five-way state.
+- **The wavy underline** carries the one binary that matters — right or wrong —
+  in a channel that survives colour blindness and greyscale. It is the
+  spell-checker convention, and it does not collide with the *solid* underline
+  `Hint` and `Convert` use. (Clear the hint underlines when `Score` is showing,
+  so the two never stack.)
+- **Bold** marks the words that required a reading to be decided, so their
+  failures are as visible as their successes (problem 4).
+
+Every hex above clears WCAG AA on white; the obvious `#FFA500` and `#FF0000` do
+not, at 1.97:1 and 4.00:1. `#1D4ED8` is used in preference to the brand
+`#0000FF` so that a semantic is not tied to the accent colour.
 
 Leaving the ~80% that was never in play uncoloured is the right instinct: colour
 marks the exceptions, not the page.
@@ -46,7 +62,9 @@ The blue is doing more work than it looks. It can only arise on a word whose
 lexicon entry carries **two or more euspellings, one of them the original** —
 `records`, `use`, `read`, `does` — because a single-euspelling entry always
 changes. So blue *is* the context-dependent class, in the half of cases where
-the sentence called for the unchanged member. See [problem 5](#5-blue-is-right-but-it-is-awarded-for-inattention).
+the sentence called for the unchanged member. Every blue word is therefore also
+bold; the converse does not hold. See
+[problem 5](#5-blue-is-right-but-it-is-awarded-for-inattention).
 
 ---
 
@@ -206,20 +224,21 @@ Row 1 and row 2 call for opposite responses — *four fifths is untouched, leave
 more alone* against *here is the sentence cue you missed* — and the second player
 is far closer to competent than the first.
 
-**Do not add a sixth colour.** Use a second channel: **bold every
-context-dependent word, in all four states.** Then blue+bold, green+bold,
-orange+bold and red+bold all read as *this one was a judgement call*, and a
+**Resolved without a sixth colour**, by the second channel now in the legend:
+**context-dependent words are bold in all four states.** Blue+bold, green+bold,
+orange+bold and red+bold all read as *this one was a judgement call*, so a
 player can see at a glance which of their reds were misreadings rather than
-overreach. Bold also avoids colliding with the underline `Hint` and `Convert`
-already use, and it is the one cue that survives greyscale (see problem 6).
+overreach. Bold does not collide with the underline `Hint` and `Convert` use,
+and it is the one cue that survives greyscale (problem 6).
 
-It does make blue partly redundant — bold + unchanged + correct says the same
-thing — so keeping the five colours and skipping bold is a coherent choice too.
-What to avoid is neither.
+This makes blue partly redundant — bold + unchanged + correct says the same
+thing twice — which is deliberate. The redundancy is what keeps the display
+legible when either channel is unavailable.
 
-Whichever channel is chosen, **put the expected form on hover**: *expected
-`records` (noun); you wrote `recordz` (verb)*. The colour says wrong; the hover
-teaches.
+**Still outstanding: the expected form on hover** — *expected `records` (noun);
+you wrote `recordz` (verb)*. Nothing in the visual scheme can distinguish rows 3
+and 4 of the table above, and it should not try; the colour says wrong, the
+hover teaches.
 
 **It is not a rare case.** 5,911 lexicon entries carry two or more euspellings —
 2.9% of types, but **5.3% of running tokens**, since they skew common (`use`,
@@ -260,32 +279,36 @@ nouns outnumber third-person verbs in most prose, so passive-correct is probably
 the common case, but that is an expectation rather than a number, and the SVM's
 training corpora in `euspell_ext` can settle it.
 
-### 6. All the meaning is in hue, and the hues are the confusable ones
+### 6. Hue alone cannot carry it — resolved in the legend
 
-Green, orange and red is the worst possible triple: red-green colour blindness
-affects roughly 8% of men, and those three collapse toward each other. Blue and
-orange survive it; green and red do not. For a project whose entire pitch is
-readability, a colour-only scoring display is a bad look — and it is WCAG 1.4.1,
-a criterion rather than a preference.
+**The defect.** Green, orange and red is the worst possible triple: red-green
+colour blindness affects roughly 8% of men, and those three collapse toward each
+other. Blue and orange survive it; green and red do not. For a project whose
+entire pitch is readability, a colour-only scoring display is a bad look — and
+it is WCAG 1.4.1, a criterion rather than a preference.
 
-Contrast against white makes it concrete. **Plain orange and plain red both fail
-AA**, orange badly:
+Contrast against white makes the second half concrete. **The obvious orange and
+red both fail AA**, orange badly:
 
-| As usually chosen | | Darkened |  |
+| Naive | Ratio | Adopted | Ratio |
 | --- | --- | --- | --- |
 | `#0000FF` blue | 8.59:1 ✓ | `#1D4ED8` | 6.70:1 ✓ |
 | `#008000` green | 5.14:1 ✓ | `#15803D` | 5.02:1 ✓ |
 | `#FFA500` orange | **1.97:1 ✗** | `#B45309` | 5.02:1 ✓ |
 | `#FF0000` red | **4.00:1 ✗** | `#B91C1C` | 6.47:1 ✓ |
 
-Take the darkened set, and pair every colour with a non-colour cue — a leading
-glyph (`✓ ✗ –`), weight, or an underline style. The bold-for-context-words
-proposal in problem 4 does double duty here, being the one signal that survives
-greyscale.
+**The fix, now in the legend.** The darkened set, plus two non-colour channels:
+a **wavy underline** on the two error states, and **bold** on
+context-dependent words.
 
-`#0000FF` is also the site's accent colour. In a legend with no links that is
-harmless, but it does tie a semantic to the brand; `#1D4ED8` sidesteps that as
-well as passing contrast.
+Why a wavy underline rather than a glyph per word: at 15–20 coloured words a
+paragraph, a leading `✓`/`✗` on each is visual noise, and the wavy underline is
+already the universal convention for *this is wrong*. It carries the binary that
+actually matters. The finer five-way distinction stays in the colour, where
+losing it costs a colour-blind player nuance rather than the verdict.
+
+Print the legend itself in the same three channels, so it teaches the encoding
+rather than just naming it.
 
 **Why this matters past the game.** The 94%-accurate classifier is the
 project's central technical claim. A drill that scores a wrong reading
