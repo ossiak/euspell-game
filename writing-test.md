@@ -86,12 +86,12 @@ second one sizes a paragraph.
 
 Four public-domain paragraphs, measured:
 
-| Paragraph | Words | Edits | Rate | Of which top-100 words |
-| --- | --- | --- | --- | --- |
-| Austen, *Pride and Prejudice* | 70 | 20 | 28.6% | 13 |
-| Dickens, *A Tale of Two Cities* | 60 | 11 | 18.3% | **11 of 11** |
-| Conan Doyle, *The Hound of the Baskervilles* | 50 | 8 | 16.0% | 4 |
-| Plain narrative prose | 43 | 7 | 16.3% | 3 |
+| Paragraph | Words | Edits | Rate | Top-100 | Context |
+| --- | --- | --- | --- | --- | --- |
+| Austen, *Pride and Prejudice* | 70 | 20 | 28.6% | 13 | 2 |
+| Dickens, *A Tale of Two Cities* | 60 | 11 | 18.3% | **11 of 11** | 2 |
+| Conan Doyle, *The Hound of the Baskervilles* | 50 | 8 | 16.0% | 4 | 1 |
+| Plain narrative prose | 43 | 7 | 16.3% | 3 | 1 |
 
 Two things follow. **The web corpus understates the literary rate** — expect
 18–22% rather than 16.3%, which is why the word-count guide lands at 70–100
@@ -149,6 +149,18 @@ words (the reflexes) reported separately from everything else (the reform
 proper). *"You have the common words; you are losing the `-ough` family"* is
 worth more to a player than *"78%"*.
 
+**Then a third line for the context-dependent words** — *"context words: 2 of
+4"* — for the reason set out in problem 5: those are the only ones that test
+reading rather than recall, and without their own line they disappear into the
+uncoloured majority. Three short lines beat one percentage:
+
+```text
+    changes found      12 of 15
+    of your 14 changes  2 wrong   (1 was the right word, wrong reading)
+    common / reform      7 / 5
+    context words        2 of 4
+```
+
 ### 3. Free-text editing breaks the alignment
 
 If a player inserts or deletes a word, token-by-token comparison against the
@@ -160,13 +172,22 @@ scoring from a diff heuristic into an exact comparison.
 
 ### 4. The legend is missing the most interesting error
 
-Writing `recordz` where the noun `records` was meant is *the right word, the
-wrong reading*. It is the project's crown jewel and the thing most worth
-testing, and in the current scheme it shows as red — indistinguishable from
-changing a word that should not have changed.
+Red currently means two things at once, and they call for opposite responses.
 
-It deserves a fifth colour (purple), because it means *you understood the
-system and missed the sense*:
+| What the player did | What it says about them | What they need told |
+| --- | --- | --- |
+| Changed a word with no euspelling at all | They think the reform is bigger than it is | *Four fifths is untouched — leave more alone* |
+| Wrote `recordz` where the noun `records` was meant | They know the word, know both forms, and read the grammar wrong | *This is the disambiguation problem — here is the cue you missed* |
+
+Same colour, same score, and the second player is far closer to competent than
+the first. (A third case hides in there too — inventing a form like `rekordz`,
+which is right instinct with wrong spelling — but the noun/verb confusion is the
+one worth its own colour, because it is the only error meaning *the player
+engaged with the hard part and lost*.)
+
+It deserves a fifth colour, with the expected form on hover — *expected
+`records` (noun); you wrote `recordz` (verb)*. The hover matters more than the
+colour: the colour says wrong, the hover teaches.
 
 | State | Colour |
 | --- | --- |
@@ -176,19 +197,66 @@ system and missed the sense*:
 | Changed a word that should not change | red |
 | Changed the right word to the wrong form | **purple** |
 
-### 5. Use the engine's own tokenizer
+**It is not a rare case.** 5,911 lexicon entries carry two or more euspellings —
+2.9% of types, but **5.3% of running tokens**, since they skew common (`use`,
+`services`, `read`, `does`, `books`). Expect **~4.5 per 85-word paragraph**, so
+purple would fire regularly rather than as a curiosity.
+
+### 5. Hint defuses the hardest words, and the score rewards inattention
+
+This is the more serious half of the same finding, and it is not a colour
+problem.
+
+**88% of context-dependent words have the original spelling among their valid
+options** — the diatone shape, `records|recordz`, `use|uze`, `read|redd`. That
+is roughly **4 words per paragraph where "leave it alone" is a legitimate
+answer**.
+
+Now combine that with `Hint`, which underlines *the words that need to be
+changed*. A diatone in its noun reading does not need changing — **so it is not
+underlined, and the hint quietly tells the player to leave it alone.** The
+hardest judgement in the reform is handed over for free, and `Score` records a
+success nobody earned. The player did not resolve the ambiguity; they were never
+shown it.
+
+Stated plainly: **the current design makes the most interesting words the
+easiest to get right.**
+
+Three changes, in order of what they buy:
+
+1. **Score context-dependent words as their own line** — *"context words: 2 of
+   4"* — regardless of colour. The cheapest fix and the most valuable: it counts
+   passive-correct answers as a visible category instead of letting them vanish
+   into the uncoloured 82%, and it tells the player the category exists at all.
+2. **Add purple**, per the table above.
+3. **Consider a second hint level** that underlines *words in the reform's
+   scope* rather than *words that change*. That preserves the judgement instead
+   of defusing it, and turns `Hint` from a partial answer key into a genuine aid.
+
+**Worth measuring before building:** how often the unchanged reading is actually
+the correct one for these pairs. Plural nouns outnumber third-person verbs in
+most prose, so passive-correct is probably the common case — but that is an
+expectation, not a number, and the SVM's training corpora in `euspell_ext` can
+settle it.
+
+**Why this matters past the game.** The 94%-accurate classifier is the
+project's central technical claim. A drill that scores a wrong reading
+identically to an invented word cannot demonstrate that claim — it cannot even
+see it.
+
+### 6. Use the engine's own tokenizer
 
 Sentence-initial capitals (`Of → Ov`), the specially-cased `I → ih/Ih`, and
 apostrophes: **`it's → it'z` is one token**. A bare `[a-z]+` tore exactly those
 in half in the channel's lexicon tool and had to be fixed. Import the
 tokenizer; do not re-derive it.
 
-### 6. Proper nouns are a trap, and 1930 prose is full of them
+### 7. Proper nouns are a trap, and 1930 prose is full of them
 
 6.5% of tokens are not in the lexicon. A player who "corrects" a character's
 name should go red; the reference must leave it alone.
 
-### 7. `Start` is not quite stateless
+### 8. `Start` is not quite stateless
 
 Random selection with no memory will serve the same paragraph twice running. It
 needs to remember the last one shown.
@@ -204,12 +272,17 @@ Accept a paragraph only if:
 | **12–20 edits** | The governing rule; everything else is secondary |
 | 70–100 words | Follows from the rule at literary rates, not a rule itself |
 | **≥ 5 edits outside the top-100 list** | Kills the Dickens case, where every edit is a reflex |
+| **≥ 2 context-dependent words** | The only ones that test reading rather than recall |
 | ≥ 8 distinct changed word types | Repetition of one word is not breadth |
 | ≤ 10% proper nouns | They are dead weight — neither edits nor distractors |
 | Records the reform revision (`r1`) | See below |
 
-Aim for **at least one context-dependent word** (a diatone or sense pair) in a
-reasonable fraction of paragraphs — those are the ones worth the purple colour.
+The context-dependent floor is the one criterion that needs checking rather than
+assuming. Running the four sample paragraphs through the tool gives 2, 2, 1 and
+1 — so **half of ordinary literary prose fails it**, and a paragraph set chosen
+purely on length would test recall almost exclusively. Prefer paragraphs where
+at least one of those words takes its *changed* reading, since the unchanged
+reading can be answered by inattention.
 
 **Store the reform revision with each paragraph.** A cached game starts teaching
 yesterday's answers, exactly as `dist/lexicon.js` did until it was rebuilt. The

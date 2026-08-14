@@ -41,7 +41,12 @@ BAND = (12, 20)  # the acceptance band, in edits
 
 
 def load_lexicon():
-    """word -> (always_changes, may_change)"""
+    """word -> (always_changes, may_change, spellings_if_context_dependent)
+
+    The third field is what makes the "right word, wrong reading" error
+    measurable: an entry with two or more euspellings is one the player has to
+    resolve from the sentence, and it is the only place that error can occur.
+    """
     lex = {}
     with open(LEX, encoding="utf-8") as f:
         for row in csv.reader(f):
@@ -53,11 +58,60 @@ def load_lexicon():
                 continue
             spellings = [s for s in row[3].split("|") if s and s != "[]"]
             if variants == 0 or not spellings:
-                lex[row[0]] = (False, False)
+                lex[row[0]] = (False, False, None)
                 continue
             differs = [s for s in spellings if s != row[0]]
-            lex[row[0]] = (bool(differs) and len(differs) == len(spellings), bool(differs))
+            context = spellings if (variants >= 2 and len(spellings) >= 2) else None
+            lex[row[0]] = (
+                bool(differs) and len(differs) == len(spellings),
+                bool(differs),
+                context,
+            )
     return lex
+
+
+def measure_context_words(lex):
+    """How often the hardest class shows up, and how much of it is free.
+
+    A context-dependent word whose spellings include the original — the diatone
+    shape, records|recordz — can be scored correct by never noticing it. Hint
+    underlines only the words that NEED changing, so in its unchanged reading
+    such a word is left unmarked, and the hint tells the player to leave the
+    hardest judgement in the reform alone.
+    """
+    n_context = sum(1 for v in lex.values() if v[2])
+    print(f"\ncontext-dependent entries  {n_context:,}  "
+          f"({100 * n_context / len(lex):.2f}% of types)")
+
+    total = ctx = passive = 0
+    seen = []
+    with open(FREQ, encoding="utf-8") as f:
+        for row in csv.reader(f):
+            if len(row) < 2 or row[0] == "word":
+                continue
+            try:
+                count = int(row[1])
+            except ValueError:
+                continue
+            total += count
+            spellings = lex.get(row[0], (0, 0, None))[2]
+            if not spellings:
+                continue
+            ctx += count
+            if row[0] in spellings:
+                passive += count
+            seen.append((count, row[0], spellings))
+
+    print(f"  share of running tokens  {100 * ctx / total:.2f}%")
+    print(f"  'leave alone' is valid   {100 * passive / ctx:.0f}% of them")
+    print(f"  in an 85-word paragraph  ~{85 * ctx / total:.1f} of them, "
+          f"~{85 * passive / total:.1f} where doing nothing may be the answer")
+
+    seen.sort(reverse=True)
+    print("\n  the ones a player will meet:")
+    for count, word, spellings in seen[:8]:
+        free = "  <- unchanged is an option" if word in spellings else ""
+        print(f"    {word:<10} {'|'.join(spellings):<24}{free}")
 
 
 def measure_corpus(lex):
@@ -76,7 +130,7 @@ def measure_corpus(lex):
             if entry is None:
                 unknown += count
                 continue
-            always, maybe = entry
+            always, maybe, _context = entry
             if maybe:
                 ceiling += count
             if always:
@@ -107,23 +161,28 @@ def measure_texts(lex, path):
     if not paragraphs:
         sys.exit(f"no paragraphs found in {path}")
 
-    print(f"{'#':>3}  {'words':>5}  {'edits':>5}  {'rate':>6}  {'top-100':>7}  band")
+    print(f"{'#':>3}  {'words':>5}  {'edits':>5}  {'rate':>6}  {'top100':>6}  {'ctx':>4}  band")
     in_band = 0
     for i, para in enumerate(paragraphs, 1):
         words = WORD.findall(para)
-        edits = [w for w in words if lex.get(w.lower(), (False, False))[0]]
+        edits = [w for w in words if lex.get(w.lower(), (False, False, None))[0]]
         rate = 100 * len(edits) / len(words) if words else 0
         # How many of this paragraph's edits are the reflex words rather than
         # the reform proper — the split writing-test.md asks the score to report.
         common = sum(1 for w in edits if w.lower() in COMMON)
+        # Context-dependent words are counted over ALL tokens, not just edits:
+        # in its unchanged reading a diatone is not an edit at all, which is
+        # exactly the case the drill must not hand over for free.
+        ctx = sum(1 for w in words if lex.get(w.lower(), (False, False, None))[2])
         ok = BAND[0] <= len(edits) <= BAND[1]
         in_band += ok
         print(
             f"{i:>3}  {len(words):>5}  {len(edits):>5}  {rate:5.1f}%  "
-            f"{common:>7}  {'ok' if ok else '--'}"
+            f"{common:>6}  {ctx:>4}  {'ok' if ok else '--'}"
         )
 
     print(f"\n{in_band} of {len(paragraphs)} paragraphs fall in the {BAND[0]}-{BAND[1]} edit band")
+    print("top100 = edits that are reflex words; ctx = words needing a reading decided")
 
 
 def top_common(lex, n=100):
@@ -137,7 +196,7 @@ def top_common(lex, n=100):
                 count = int(row[1])
             except ValueError:
                 continue
-            if lex.get(row[0], (False, False))[0]:
+            if lex.get(row[0], (False, False, None))[0]:
                 changes.append((count, row[0]))
     changes.sort(reverse=True)
     return {w for _, w in changes[:n]}
@@ -150,3 +209,4 @@ if __name__ == "__main__":
         measure_texts(lexicon, sys.argv[1])
     else:
         measure_corpus(lexicon)
+        measure_context_words(lexicon)
