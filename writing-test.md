@@ -33,13 +33,20 @@ All but `Hint` are stateless.
 
 | State | Colour |
 | --- | --- |
-| Correctly unchanged | none |
+| Never needs changing | none |
+| Correctly unchanged | blue |
 | Correctly changed | green |
 | Incorrectly unchanged | orange |
 | Incorrectly changed | red |
 
-Leaving the 80% of correct-and-unchanged words uncoloured is the right
-instinct: colour should mark the exceptions, not the page.
+Leaving the ~80% that was never in play uncoloured is the right instinct: colour
+marks the exceptions, not the page.
+
+The blue is doing more work than it looks. It can only arise on a word whose
+lexicon entry carries **two or more euspellings, one of them the original** —
+`records`, `use`, `read`, `does` — because a single-euspelling entry always
+changes. So blue *is* the context-dependent class, in the half of cases where
+the sentence called for the unchanged member. See [problem 5](#5-blue-is-right-but-it-is-awarded-for-inattention).
 
 ---
 
@@ -139,7 +146,21 @@ rename `Convert` to **Show answer** and let it end the round.
 ### 2. The score needs two numbers, twice over
 
 **What is the percentage of?** Scored across all tokens, doing nothing scores
-82%. It has to be over the changed set, and one number will not do it:
+82%. It has to be over the words that were in play — and the five-colour legend
+answers that for free, which is its unadvertised benefit. The categories
+partition every token into in play and not:
+
+```text
+    score = (blue + green) / (blue + green + orange + red)
+```
+
+The `none` words drop out automatically rather than by a special rule. In an
+85-word paragraph the denominator is **15–20**, each item worth 5–7% — good
+granularity, and it lands on the 12–20 edit band without being contrived. Blue
+correctly *raises* the denominator: leaving `records` alone was a decision, so it
+should count both for and against.
+
+One number still will not do it, though:
 
 - **Recall** — found 12 of the 15 changes. Alone, it rewards changing everything.
 - **Precision** — 2 of your 14 changes were wrong. Alone, it rewards changing nothing.
@@ -149,16 +170,15 @@ words (the reflexes) reported separately from everything else (the reform
 proper). *"You have the common words; you are losing the `-ough` family"* is
 worth more to a player than *"78%"*.
 
-**Then a third line for the context-dependent words** — *"context words: 2 of
-4"* — for the reason set out in problem 5: those are the only ones that test
-reading rather than recall, and without their own line they disappear into the
-uncoloured majority. Three short lines beat one percentage:
+**Then a line for the context-dependent words** — *"context words: 2 of 4"* —
+for the reason set out in problem 5: those are the only ones that test reading
+rather than recall. Four short lines beat one percentage:
 
 ```text
     changes found      12 of 15
     of your 14 changes  2 wrong   (1 was the right word, wrong reading)
     common / reform      7 / 5
-    context words        2 of 4
+    context words        3 of 4    (2 of them after hints)
 ```
 
 ### 3. Free-text editing breaks the alignment
@@ -170,93 +190,121 @@ reference collapses and the colours scatter.
 are already visible — it preserves the "convert by editing" feel, and it turns
 scoring from a diff heuristic into an exact comparison.
 
-### 4. The legend is missing the most interesting error
+### 4. Red still carries four errors, and the legend is now asymmetric
 
-Red currently means two things at once, and they call for opposite responses.
+Blue fixed the correct side. The error side is unchanged, so the scheme now
+names a success it does not name the failure of:
 
-| What the player did | What it says about them | What they need told |
-| --- | --- | --- |
-| Changed a word with no euspelling at all | They think the reform is bigger than it is | *Four fifths is untouched — leave more alone* |
-| Wrote `recordz` where the noun `records` was meant | They know the word, know both forms, and read the grammar wrong | *This is the disambiguation problem — here is the cue you missed* |
+| Player did | Truth | Shows | What it means |
+| --- | --- | --- | --- |
+| Changed `cat` → `catt` | out of scope | red | Thinks the reform is bigger than it is |
+| Wrote `recordz`, noun meant | in scope, unchanged | red | **Misread the sentence** — the exact mirror of blue |
+| Wrote `bowz` where `buwz` was right | in scope, changed | red | Misread the sentence |
+| Wrote `rekordz` | in scope, changed | red | Knows it changes, does not know the form |
 
-Same colour, same score, and the second player is far closer to competent than
-the first. (A third case hides in there too — inventing a form like `rekordz`,
-which is right instinct with wrong spelling — but the noun/verb confusion is the
-one worth its own colour, because it is the only error meaning *the player
-engaged with the hard part and lost*.)
+Row 1 and row 2 call for opposite responses — *four fifths is untouched, leave
+more alone* against *here is the sentence cue you missed* — and the second player
+is far closer to competent than the first.
 
-It deserves a fifth colour, with the expected form on hover — *expected
-`records` (noun); you wrote `recordz` (verb)*. The hover matters more than the
-colour: the colour says wrong, the hover teaches.
+**Do not add a sixth colour.** Use a second channel: **bold every
+context-dependent word, in all four states.** Then blue+bold, green+bold,
+orange+bold and red+bold all read as *this one was a judgement call*, and a
+player can see at a glance which of their reds were misreadings rather than
+overreach. Bold also avoids colliding with the underline `Hint` and `Convert`
+already use, and it is the one cue that survives greyscale (see problem 6).
 
-| State | Colour |
-| --- | --- |
-| Correctly unchanged | none |
-| Correctly changed | green |
-| Should have changed, did not | orange |
-| Changed a word that should not change | red |
-| Changed the right word to the wrong form | **purple** |
+It does make blue partly redundant — bold + unchanged + correct says the same
+thing — so keeping the five colours and skipping bold is a coherent choice too.
+What to avoid is neither.
+
+Whichever channel is chosen, **put the expected form on hover**: *expected
+`records` (noun); you wrote `recordz` (verb)*. The colour says wrong; the hover
+teaches.
 
 **It is not a rare case.** 5,911 lexicon entries carry two or more euspellings —
 2.9% of types, but **5.3% of running tokens**, since they skew common (`use`,
-`services`, `read`, `does`, `books`). Expect **~4.5 per 85-word paragraph**, so
-purple would fire regularly rather than as a curiosity.
+`services`, `read`, `does`, `books`). Expect **~4.5 per 85-word paragraph**.
 
-### 5. Hint defuses the hardest words, and the score rewards inattention
-
-This is the more serious half of the same finding, and it is not a colour
-problem.
+### 5. Blue is right, but it is awarded for inattention
 
 **88% of context-dependent words have the original spelling among their valid
 options** — the diatone shape, `records|recordz`, `use|uze`, `read|redd`. That
 is roughly **4 words per paragraph where "leave it alone" is a legitimate
-answer**.
+answer**, and they are the words blue lights up.
 
-Now combine that with `Hint`, which underlines *the words that need to be
-changed*. A diatone in its noun reading does not need changing — **so it is not
-underlined, and the hint quietly tells the player to leave it alone.** The
-hardest judgement in the reform is handed over for free, and `Score` records a
-success nobody earned. The player did not resolve the ambiguity; they were never
-shown it.
+A player who never noticed `records` earns the same blue as one who parsed the
+clause. Blue is still the correct verdict — the output is right, and in real
+writing that is what matters — but it is weak evidence of skill.
 
-Stated plainly: **the current design makes the most interesting words the
-easiest to get right.**
+**`Hint` makes it weaker.** The hint underlines *the words that need to be
+changed*. A diatone in its noun reading does not need changing — **so it goes
+unmarked, and the hint quietly tells the player to leave it alone.** The hardest
+judgement in the reform is handed over for free. Left as specified, the design
+makes the most interesting words the easiest to get right.
 
 Three changes, in order of what they buy:
 
-1. **Score context-dependent words as their own line** — *"context words: 2 of
-   4"* — regardless of colour. The cheapest fix and the most valuable: it counts
-   passive-correct answers as a visible category instead of letting them vanish
-   into the uncoloured 82%, and it tells the player the category exists at all.
-2. **Add purple**, per the table above.
+1. **Report context words as their own line, annotated with hint use** —
+   *"context words: 3 of 4 (2 of them after hints)"*. The round already has to
+   record hint state (problem 1), so this is nearly free, and it keeps blue
+   honest without demoting it.
+2. **Mark the class in every state**, per problem 4, so the failures are as
+   visible as the successes.
 3. **Consider a second hint level** that underlines *words in the reform's
    scope* rather than *words that change*. That preserves the judgement instead
    of defusing it, and turns `Hint` from a partial answer key into a genuine aid.
 
 **Worth measuring before building:** how often the unchanged reading is actually
-the correct one for these pairs. Plural nouns outnumber third-person verbs in
-most prose, so passive-correct is probably the common case — but that is an
-expectation, not a number, and the SVM's training corpora in `euspell_ext` can
-settle it.
+the correct one for these pairs — that is, how much blue there will be. Plural
+nouns outnumber third-person verbs in most prose, so passive-correct is probably
+the common case, but that is an expectation rather than a number, and the SVM's
+training corpora in `euspell_ext` can settle it.
+
+### 6. All the meaning is in hue, and the hues are the confusable ones
+
+Green, orange and red is the worst possible triple: red-green colour blindness
+affects roughly 8% of men, and those three collapse toward each other. Blue and
+orange survive it; green and red do not. For a project whose entire pitch is
+readability, a colour-only scoring display is a bad look — and it is WCAG 1.4.1,
+a criterion rather than a preference.
+
+Contrast against white makes it concrete. **Plain orange and plain red both fail
+AA**, orange badly:
+
+| As usually chosen | | Darkened |  |
+| --- | --- | --- | --- |
+| `#0000FF` blue | 8.59:1 ✓ | `#1D4ED8` | 6.70:1 ✓ |
+| `#008000` green | 5.14:1 ✓ | `#15803D` | 5.02:1 ✓ |
+| `#FFA500` orange | **1.97:1 ✗** | `#B45309` | 5.02:1 ✓ |
+| `#FF0000` red | **4.00:1 ✗** | `#B91C1C` | 6.47:1 ✓ |
+
+Take the darkened set, and pair every colour with a non-colour cue — a leading
+glyph (`✓ ✗ –`), weight, or an underline style. The bold-for-context-words
+proposal in problem 4 does double duty here, being the one signal that survives
+greyscale.
+
+`#0000FF` is also the site's accent colour. In a legend with no links that is
+harmless, but it does tie a semantic to the brand; `#1D4ED8` sidesteps that as
+well as passing contrast.
 
 **Why this matters past the game.** The 94%-accurate classifier is the
 project's central technical claim. A drill that scores a wrong reading
 identically to an invented word cannot demonstrate that claim — it cannot even
 see it.
 
-### 6. Use the engine's own tokenizer
+### 7. Use the engine's own tokenizer
 
 Sentence-initial capitals (`Of → Ov`), the specially-cased `I → ih/Ih`, and
 apostrophes: **`it's → it'z` is one token**. A bare `[a-z]+` tore exactly those
 in half in the channel's lexicon tool and had to be fixed. Import the
 tokenizer; do not re-derive it.
 
-### 7. Proper nouns are a trap, and 1930 prose is full of them
+### 8. Proper nouns are a trap, and 1930 prose is full of them
 
 6.5% of tokens are not in the lexicon. A player who "corrects" a character's
 name should go red; the reference must leave it alone.
 
-### 8. `Start` is not quite stateless
+### 9. `Start` is not quite stateless
 
 Random selection with no memory will serve the same paragraph twice running. It
 needs to remember the last one shown.
