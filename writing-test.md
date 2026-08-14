@@ -235,9 +235,11 @@ This makes blue partly redundant — bold + unchanged + correct says the same
 thing twice — which is deliberate. The redundancy is what keeps the display
 legible when either channel is unavailable.
 
-**It is not a rare case.** 5,911 lexicon entries carry two or more euspellings —
+**It is not a rare case.** 5,920 lexicon entries carry two or more euspellings —
 2.9% of types, but **5.3% of running tokens**, since they skew common (`use`,
-`services`, `read`, `does`, `books`). Expect **~4.5 per 85-word paragraph**.
+`services`, `read`, `does`, `books`). Expect **~4.5 per 85-word paragraph**. Nine
+of them come from the contractions file, and are the sharpest cases in the whole
+set: `anywun's` against `anywun'z`, possessive against *is*.
 
 #### The explanation, on hover
 
@@ -392,12 +394,114 @@ reading can be answered by inattention.
 yesterday's answers, exactly as `dist/lexicon.js` did until it was rebuilt. The
 freeze makes this low-risk today; r2 will not.
 
-**Sourcing.** As of 2026 the US public domain covers works published **1930 or
-earlier** (95-year term), so "recently public domain" is the 1930 cohort —
-modern-feeling prose, and a good angle in itself. Take texts from Project
-Gutenberg and record title, author and year per paragraph so attribution is
-possible. Public-domain status is jurisdictional: either stay well back from the
-line or state that the claim is US-PD.
+### Sourcing
+
+**Standard Ebooks first, Project Gutenberg as fallback.** Standard Ebooks
+dedicates its editorial work to the public domain and ships normalized
+typography — curly quotes, proper em dashes, consistent spacing — which matters
+when you are diffing token streams. Gutenberg transcriptions vary and carry a
+licence header and trademark you would strip.
+
+**Use a two-jurisdiction rule, not just the US one.** Published **1930 or
+earlier** clears the US 95-year term; author **died 1955 or earlier** clears
+life+70 in the UK and EU. Requiring both makes the game safe on a site served
+worldwide and removes the need for a "US-PD only" caveat anywhere. The pool is
+still large and still modern-feeling: Conrad, Kipling, Chesterton, Wharton,
+Cather, Fitzgerald, Woolf, Joyce, Mansfield, Jack London.
+
+The strict 1930-cohort framing costs that safety — Hammett, Waugh and Faulkner
+were all alive well past 1955.
+
+**Reject on sight:**
+
+- **Eye-dialect.** Non-words to the lexicon, and it poisons *never needs
+  changing*.
+- **Verse, and dialogue fragments.** Too short, too many proper nouns.
+- **Paragraphs that do not stand alone.** The player reads it cold: no opening
+  pronoun whose antecedent is two paragraphs back.
+- **Any context word whose reading depends on the previous paragraph.** If
+  `records` is resolvable only from earlier text, the player cannot decide it —
+  and neither could the classifier. The evidence has to be inside the excerpt.
+
+**British sources run hotter, and their extra edits are all one rule.** The
+lexicon carries the Anglo-American merges: `colour→color` (601),
+`honour→honor`, `realise→realize`, `theatre→theater`, `gaol→jail`,
+`travelling→traveling` (631). So a British novel yields more edits than the
+corpus figures predict — and five of them may be *drop the u*, which is the
+top-20 concentration problem on a different axis. Do not build the set from
+British sources alone, and track the merge share per paragraph.
+
+**The merge set is selective**, which a hand-checker must not assume away:
+`grey` and `practise` are `000`, unchanged, while `colour` and `theatre` are
+not.
+
+### File format
+
+**One Markdown file per paragraph, in `paragraphs/`.** The unit of manual work
+is one paragraph, so the unit of git history should be too — *fixed the euspell
+in 042* is then a one-file diff. Prose in CSV or JSON is quoting hell and diffs
+as one enormous line; this diffs by sentence. Both versions live in one file so
+they cannot drift apart the way parallel directories do.
+
+```markdown
+---
+id: 042
+title: The Secret Agent
+author: Joseph Conrad
+year: 1907
+death: 1924
+source: https://standardebooks.org/ebooks/joseph-conrad/the-secret-agent
+revision: r1
+checked: 2026-08-20
+---
+
+## traditional
+
+Mr Verloc, going out in the morning, left his shop nominally in charge of
+his brother-in-law.
+
+## euspell
+
+Mr Verloc, going out in the morning, left his shop nominally in qharge ov
+his brother-in-law.
+```
+
+*(A fragment, to show the shape — every word in it is checked against the
+lexicon, but a real entry is 70–100 words with 12–20 edits. Note `his` stays:
+only `is` becomes `iz`.)*
+
+**`death` is a field, not a comment**, so the two-jurisdiction rule is
+machine-checkable rather than something someone remembers.
+
+**Do not store the measured stats** — words, edits, context count. They are
+derived, they drift the moment the lexicon moves, and
+[tools/check-paragraphs.py](tools/check-paragraphs.py) computes them in a
+second. Store only what a human decided.
+
+**Store the reform revision with each paragraph.** A cached game starts teaching
+yesterday's answers, exactly as `dist/lexicon.js` did until it was rebuilt. The
+freeze makes this low-risk today; r2 will not.
+
+### What the validator checks
+
+`python tools/check-paragraphs.py` — and this is where the format earns itself:
+
+1. **Equal token counts.** A hand-edit that drops a word breaks alignment
+   silently, and every colour after it is wrong.
+2. **Every differing token is a listed euspelling of its original.** Catches
+   typos in the manual conversion.
+3. **Every *identical* token is legitimately unchangeable.** The strong check —
+   if the original has one euspelling and it differs, leaving it is an error in
+   the source data, not the player's.
+4. **The acceptance band**, per the criteria above.
+5. **Front matter complete, and `death` ≤ 1955.**
+
+One trap it exists to avoid: the lexicon's fourth column is **overloaded**. For
+the 40 `9xx` abbreviations it holds an expansion, not a respelling — `mr →
+Mister`, `etc → et cetera` — and `converter.js` ignores it via
+`if (encoding % 10 === 0) return word`. A checker that reads the CSV without
+that guard invents 40 changes. It is written down because this exact bug was
+introduced and caught while building the tool.
 
 ---
 

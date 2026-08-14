@@ -14,7 +14,13 @@ Nothing is built yet. This folder currently holds the thinking.
 
 | Tool | What it does |
 | --- | --- |
-| [tools/measure-edit-rate.py](tools/measure-edit-rate.py) | How much work a paragraph asks of a player: the token change rate, how concentrated the edits are, and which candidate paragraphs fall in the acceptance band |
+| [tools/measure-edit-rate.py](tools/measure-edit-rate.py) | How much work a paragraph asks of a player: the token change rate, how concentrated the edits are, and which candidate texts fall in the acceptance band |
+| [tools/check-paragraphs.py](tools/check-paragraphs.py) | Validates the committed paragraphs — alignment, spellings, acceptance band, public-domain claim. Exits non-zero, so it can gate a build |
+| [tools/euspell_data.py](tools/euspell_data.py) | Shared lexicon access for both. One loader, one tokenizer |
+
+| Content | |
+| --- | --- |
+| [paragraphs/](paragraphs/) | The 100 passages, one file each, traditional and euspell. Start from `TEMPLATE.md` |
 
 ## The through-line
 
