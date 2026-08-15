@@ -33,6 +33,12 @@ const GAME = path.resolve(__dirname, '..');
 const OUT = path.join(GAME, 'screenshots', 'sample.pdf');
 const WANT = ['005', '004', '003']; // Poe, Bronte, Mansfield — in reading order
 
+// The title counts the passages rather than asserting a number. It said "Four
+// passages" over three of them until someone read it: a hardcoded numeral beside
+// a list is a fact waiting to go stale, exactly like the encoding table's counts.
+const NUMERALS = ['no', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight'];
+const numeral = (n) => NUMERALS[n] ?? String(n);
+
 function passages() {
   const dir = path.join(GAME, 'paragraphs');
   return WANT.map((id) => {
@@ -48,8 +54,11 @@ function passages() {
   });
 }
 
+const CHOSEN = passages();
+const TITLE = `${numeral(CHOSEN.length)} passage${CHOSEN.length === 1 ? '' : 's'}`;
+
 const html = `<!doctype html>
-<html lang="en"><head><meta charset="utf-8"><title>Four passages</title>
+<html lang="en"><head><meta charset="utf-8"><title>${TITLE}</title>
 <style>
   @page { size: A4; margin: 22mm 20mm; }
   body { font: 11.5pt/1.75 Georgia, "Times New Roman", serif; color: #111; }
@@ -59,9 +68,9 @@ const html = `<!doctype html>
   .by { font-size: 9.5pt; color: #666; margin: 0 0 8pt; }
   p.text { margin: 0 0 12pt; text-align: justify; }
 </style></head><body>
-  <h1>Four passages</h1>
+  <h1>${TITLE}</h1>
   <p class="sub">A short reader, set for testing how a document renders.</p>
-  ${passages().map((p) => `
+  ${CHOSEN.map((p) => `
   <h2>${p.title}</h2>
   <p class="by">${p.author}</p>
   <p class="text">${p.body}</p>`).join('\n')}
@@ -84,6 +93,7 @@ app.whenReady().then(async () => {
 
   const has = (needle) => pdf.includes(Buffer.from(needle));
   console.log(`wrote ${path.relative(GAME, OUT)} — ${(pdf.length / 1024).toFixed(0)} KB`);
+  console.log(`  title: "${TITLE}"  over ${CHOSEN.length}: ${CHOSEN.map((p) => p.author).join(', ')}`);
   console.log(`  /Font present: ${has('/Font')}   (a text layer is the whole requirement)`);
   win.destroy();
   app.quit();
