@@ -36,6 +36,17 @@ const SHOTS = [
     page: 'tools/demo-page.html',
     overlay: { file: 'popup-records.png', marginRight: 44, top: 40 },
   },
+  // The options panel is the subject, so it gets a plain field rather than the
+  // article behind shot 2 — the same background twice reads as carelessness.
+  // Trimmed because the capture caught a few pixels of the page underneath the
+  // dialog, and scaled down so it does not fill the frame edge to edge.
+  {
+    name: '04-options.png',
+    w: 1280,
+    h: 800,
+    page: 'tools/blank.html',
+    overlay: { file: 'options-popup.png', center: true, height: 660, trim: 6 },
+  },
   { name: 'promo-tile.png', w: 440, h: 280, page: 'tools/promo-tile.html' },
 ];
 
@@ -98,10 +109,27 @@ async function composite(background, spec) {
     return background;
   }
 
-  const popup = sharp(overlayPath);
+  // Trim any page that bled in around a dialog capture, then scale if asked.
+  let pipeline = sharp(overlayPath);
+  if (spec.overlay.trim) {
+    const m = await pipeline.metadata();
+    const t = spec.overlay.trim;
+    pipeline = sharp(await pipeline
+      .extract({ left: t, top: t, width: m.width - t * 2, height: m.height - t * 2 })
+      .png().toBuffer());
+  }
+  if (spec.overlay.height) {
+    pipeline = sharp(await pipeline.resize({ height: spec.overlay.height }).png().toBuffer());
+  }
+
+  const popup = pipeline;
   const { width, height } = await popup.metadata();
-  const left = spec.w - width - spec.overlay.marginRight;
-  const top = spec.overlay.top;
+  const left = spec.overlay.center
+    ? Math.round((spec.w - width) / 2)
+    : spec.w - width - spec.overlay.marginRight;
+  const top = spec.overlay.center
+    ? Math.round((spec.h - height) / 2)
+    : spec.overlay.top;
 
   // Two pipelines, and it has to be two.
   //
