@@ -31,7 +31,17 @@ const path = require('node:path');
 
 const GAME = path.resolve(__dirname, '..');
 const OUT = path.join(GAME, 'screenshots', 'sample.pdf');
-const WANT = ['005', '004', '003']; // Poe, Bronte, Mansfield — in reading order
+// Poe, Bronte, Conrad — in reading order. NOT Mansfield (003): it carries two
+// genitives, and the clitic rule reads "the shepherd's head" as verbal, so the
+// converted page showed `shepherd'z`. A store screenshot is the wrong place to
+// exhibit a misclassification in the feature the reform is proudest of.
+//
+// The two known triggers are a genitive `'s` and a context-dependent word
+// beside a semicolon (ossiak/euspell#11). Poe and Bronte both contain
+// semicolons and are fine, because no context word sits next to one. Conrad has
+// neither trigger, and its three context words — forcez, meanz, taer — all
+// resolve correctly.
+const WANT = ['005', '004', '002'];
 
 // The title counts the passages rather than asserting a number. It said "Four
 // passages" over three of them until someone read it: a hardcoded numeral beside
