@@ -23,6 +23,10 @@ Nothing is built yet. This folder currently holds the thinking.
 | [tools/convert-paragraphs.mjs](tools/convert-paragraphs.mjs) | Drafts `paragraphs/*.md` from a candidates file, converting with the real engine. Never overwrites an existing file |
 | [tools/build-data.mjs](tools/build-data.mjs) | `paragraphs/*.md` → `web/paragraphs.js`. The only step that reads the lexicon |
 | [tools/test-drill.mjs](tools/test-drill.mjs) | The scoring rules, checked without a browser |
+| [tools/capture-shots.cjs](tools/capture-shots.cjs) | Store screenshots, captured from the real page via Eupub's Electron |
+
+Capture: `NODE_PATH=../Eupub/node_modules ../Eupub/node_modules/.bin/electron tools/capture-shots.cjs`
+(`ELECTRON_RUN_AS_NODE` must be unset, or Electron runs as plain Node.)
 | [tools/measure-edit-rate.py](tools/measure-edit-rate.py) | How much work a paragraph asks of a player: the token change rate, how concentrated the edits are, and which candidate texts fall in the acceptance band |
 | [tools/check-paragraphs.py](tools/check-paragraphs.py) | Validates the committed paragraphs — alignment, spellings, acceptance band, public-domain claim. Exits non-zero, so it can gate a build |
 | [tools/euspell_data.py](tools/euspell_data.py) | Shared lexicon access for both. One loader, one tokenizer |

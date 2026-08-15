@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Euspell — promo tile</title>
+<!--
+  The Chrome Web Store's 440x280 promo tile. Optional, but required for any
+  chance of being featured, and a different aspect ratio from the screenshots so
+  it has to be composed rather than cropped.
+
+  One idea only: a word changing. The brand blue is #0000FF, and `night → niht`
+  is the reform's clearest single example — one letter pair gone, the word still
+  legible at a glance, which is the whole argument in four characters.
+-->
+<style>
+  html, body { margin: 0; height: 100%; }
+  body {
+    width: 440px; height: 280px;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 18px;
+    background: #ffffff;
+    font-family: Georgia, "Times New Roman", serif;
+    color: #000;
+  }
+  .mark {
+    font-size: 46px; line-height: 1;
+    color: #0000FF;
+    font-family: "Segoe UI Symbol", "Noto Sans Georgian", Georgia, serif;
+  }
+  .name { font-size: 30px; letter-spacing: .01em; }
+  .pair { font-size: 26px; display: flex; align-items: center; gap: 14px; }
+  .from { color: #52525b; }
+  .arrow { color: #0000FF; font-size: 20px; }
+  .to { color: #0000FF; font-weight: 700; }
+  .tag {
+    font: 12px/1 system-ui, sans-serif;
+    letter-spacing: .09em; text-transform: uppercase; color: #52525b;
+  }
+</style>
+</head>
+<body>
+  <div class="mark">ჱ</div>
+  <div class="name">Euspell</div>
+  <div class="pair">
+    <span class="from">night</span>
+    <span class="arrow">→</span>
+    <span class="to">niht</span>
+  </div>
+  <div class="tag">English spelling, made regular</div>
+</body>
+</html>
