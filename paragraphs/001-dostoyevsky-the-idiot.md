@@ -15,4 +15,4 @@ One of them was a young fellow of about twenty-seven, not tall, with black curli
 
 ## euspell
 
-Wun ov them was a yung fellow ov about twenty-seven, not tall, with black curling hair, and small, gray, firy iyes. His nose was brodd and flat, and he had hih qheek bonez; his thin lips wer constantly compressd intu an impudent, ironical—it miht allmoste be calld a malicious—smile; but his forehedd was hih and well formd, and atoned for a good deal ov the ugliness ov the lower part ov his face.
+Wun ov them was a yung fellow ov about twenty-seven, not tall, with black curling hair, and small, gray, firy iyes. His nose was brodd and flat, and he had hih qheek bones; his thin lips wer constantly compressd intu an impudent, ironical—it miht allmoste be calld a malicious—smile; but his forehedd was hih and well formd, and atoned for a good deal ov the ugliness ov the lower part ov his face.

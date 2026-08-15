@@ -15,7 +15,7 @@
 // The engine runs headless on build/lib/dom-shim.js in euspell_ext. It is the
 // same code path the extension uses, semantic disambiguators included, so
 // `records` and `bow` come out resolved by context rather than defaulted.
-import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
+import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -44,7 +44,9 @@ function toEuspell(text) {
 
 const slug = (s) => s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 
-const source = process.argv[2] ?? 'sample_paragraphs1.txt';
+const args = process.argv.slice(2);
+const force = args.includes('--force');
+const source = args.find((a) => !a.startsWith('--')) ?? 'sample_paragraphs1.txt';
 const raw = readFileSync(resolve(GAME, source), 'utf8');
 
 // A file round-tripped through a non-UTF-8 step loses its dashes to U+FFFD.
@@ -65,7 +67,14 @@ const today = new Date().toISOString().slice(0, 10);
 blocks.forEach((block, i) => {
   const [heading, ...rest] = block.split('\n');
   const [author, title] = heading.split(/\s+-\s+/);
-  const body = rest.map((l) => l.trim()).join(' ').replace(/\s+/g, ' ').trim();
+  // Passages copied from a typeset page carry hard line wraps, and a compound
+  // that broke at its hyphen ("charred-\nlooking") must rejoin without a space
+  // or it becomes two words and a stray dash.
+  const body = rest
+    .map((l) => l.trim())
+    .reduce((acc, line) => (acc.endsWith('-') ? acc + line : `${acc} ${line}`), '')
+    .replace(/\s+/g, ' ')
+    .trim();
   const id = String(i + 1).padStart(3, '0');
   const name = `${id}-${slug(author ?? 'unknown')}-${slug(title ?? 'untitled')}.md`;
 
@@ -82,8 +91,19 @@ blocks.forEach((block, i) => {
     '---',
   ].join('\n');
 
+  // Never clobber a file that already exists. The engine's output is a draft
+  // and the whole point of the workflow is that a human corrects it — twice
+  // already, for `bonez` and `shepherd'z`, both genuine engine errors. A
+  // generator that overwrites review work destroys the only part of this
+  // process a machine cannot redo.
+  const path = join(OUT, name);
+  if (existsSync(path) && !force) {
+    console.log(`  skipped paragraphs/${name}  (exists — pass --force to overwrite)`);
+    return;
+  }
+
   writeFileSync(
-    join(OUT, name),
+    path,
     `${front}\n\n## traditional\n\n${body}\n\n## euspell\n\n${toEuspell(body)}\n`,
     'utf8',
   );
@@ -91,6 +111,6 @@ blocks.forEach((block, i) => {
 });
 
 console.log(
-  `\n${blocks.length} drafts written. Fill in year/death/source, read both sides, ` +
+  `\n${blocks.length} block(s) processed. Fill in year/death/source, read both sides, ` +
   'then set `checked:` and run tools/check-paragraphs.py.',
 );

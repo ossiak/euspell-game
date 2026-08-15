@@ -12,8 +12,17 @@ Nothing is built yet. This folder currently holds the thinking.
 | [writing-test.md](writing-test.md) | The conversion drill — convert a paragraph by hand and be scored on it. Paragraph sizing, the open problems in the spec, and how to implement it on desktop and mobile |
 | [store-screenshots.md](store-screenshots.md) | The Chrome Web Store screenshot brief, parked here because the demo page may produce the imagery |
 
+| The drill | |
+| --- | --- |
+| [web/index.html](web/index.html) | The conversion drill. Opens straight from the filesystem — no server, no build, no network |
+| [web/drill.js](web/drill.js) | The page. One global, `EuspellDrill.mount(el, data)`; no lexicon at runtime |
+| [web/paragraphs.js](web/paragraphs.js) | Generated data: the passages plus a few flags per word |
+
 | Tool | What it does |
 | --- | --- |
+| [tools/convert-paragraphs.mjs](tools/convert-paragraphs.mjs) | Drafts `paragraphs/*.md` from a candidates file, converting with the real engine. Never overwrites an existing file |
+| [tools/build-data.mjs](tools/build-data.mjs) | `paragraphs/*.md` → `web/paragraphs.js`. The only step that reads the lexicon |
+| [tools/test-drill.mjs](tools/test-drill.mjs) | The scoring rules, checked without a browser |
 | [tools/measure-edit-rate.py](tools/measure-edit-rate.py) | How much work a paragraph asks of a player: the token change rate, how concentrated the edits are, and which candidate texts fall in the acceptance band |
 | [tools/check-paragraphs.py](tools/check-paragraphs.py) | Validates the committed paragraphs — alignment, spellings, acceptance band, public-domain claim. Exits non-zero, so it can gate a build |
 | [tools/euspell_data.py](tools/euspell_data.py) | Shared lexicon access for both. One loader, one tokenizer |

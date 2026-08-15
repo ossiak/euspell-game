@@ -1,0 +1,95 @@
+/* The conversion drill. Legend and reasoning: ../writing-test.md
+ *
+ * White background by specification, so the light palette is the only palette.
+ * Three channels carry the verdict, because hue alone cannot: colour is the
+ * five-way state, a wavy underline is the right/wrong binary that survives
+ * colour blindness and greyscale, and bold marks the words that needed a
+ * reading decided. Every colour below clears WCAG AA on white — the obvious
+ * #FFA500 and #FF0000 do not, at 1.97:1 and 4.00:1.
+ */
+:root {
+  --ink: #000000;
+  --blue: #1D4ED8;   /* correctly unchanged   6.70:1 */
+  --green: #15803D;  /* correctly changed     5.02:1 */
+  --orange: #B45309; /* should have changed   5.02:1 */
+  --red: #B91C1C;    /* changed wrongly       6.47:1 */
+  --rule: #d4d4d8;
+  --muted: #52525b;
+}
+
+body {
+  margin: 0;
+  background: #ffffff;
+  color: var(--ink);
+  font: 16px/1.6 Georgia, "Times New Roman", serif;
+}
+
+.drill { max-width: 40rem; margin: 0 auto; padding: 2rem 1.25rem 4rem; }
+
+.passage {
+  font-size: 1.25rem;
+  line-height: 2.1;      /* room for the focus ring and the wavy underline */
+  margin: 0 0 1.5rem;
+}
+
+/* A word, not a form field: no border until it has focus, so the paragraph
+   still reads as a paragraph rather than as eighty input boxes. */
+.w {
+  border-radius: 2px;
+  padding: 0 1px;
+  outline: none;
+  white-space: pre;
+}
+.w[contenteditable="plaintext-only"]:hover { background: #f4f4f5; }
+.w[contenteditable="plaintext-only"]:focus { background: #eef2ff; box-shadow: 0 0 0 2px var(--blue); }
+
+/* Bold = this word needed a reading decided. Applied in every state, so its
+   failures are as visible as its successes. */
+.w.ctx { font-weight: 700; }
+
+/* Hint and Convert use a solid underline; the error marks below use a wavy one,
+   so the two never mean the same thing. */
+.w.hint { text-decoration: underline; text-underline-offset: 4px; }
+
+.w.blue { color: var(--blue); }
+.w.green { color: var(--green); }
+.w.orange {
+  color: var(--orange);
+  text-decoration: underline wavy var(--orange);
+  text-underline-offset: 4px;
+}
+.w.red {
+  color: var(--red);
+  text-decoration: underline wavy var(--red);
+  text-underline-offset: 4px;
+}
+
+.bar { display: flex; flex-wrap: wrap; gap: .5rem; margin-bottom: 1.25rem; }
+.bar button {
+  font: 600 .95rem/1 system-ui, sans-serif;
+  padding: .6rem 1rem;
+  border: 1px solid var(--rule);
+  border-radius: 6px;
+  background: #fff;
+  color: var(--ink);
+  cursor: pointer;
+}
+.bar button:hover { border-color: var(--muted); }
+.bar button.toggle.on { background: var(--ink); color: #fff; border-color: var(--ink); }
+
+.readout {
+  font: .9rem/1.7 ui-monospace, "Cascadia Code", Consolas, monospace;
+  margin: 0 0 1rem;
+  white-space: pre-wrap;
+  color: var(--ink);
+}
+
+.panel {
+  min-height: 3.2rem;
+  padding: .75rem 1rem;
+  border-left: 3px solid var(--rule);
+  font-size: .95rem;
+  color: var(--muted);
+}
+
+.attrib { font-size: .8rem; color: var(--muted); margin-top: 2rem; }
