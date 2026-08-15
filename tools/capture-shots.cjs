@@ -47,6 +47,23 @@ const SHOTS = [
     page: 'tools/blank.html',
     overlay: { file: 'options-popup.png', center: true, height: 660, trim: 6 },
   },
+  // Captured by hand from Chrome, because the viewer needs the extension really
+  // installed: rendering it headless gets the toolbar up and the page canvases
+  // instantiated, but they come out blank. Nothing to compose — it is already a
+  // full window — so this one is only resized.
+  // Padded, not cropped: the window is wider than 16:10, and cropping to cover
+  // cut the right of the viewer's own toolbar off — losing "Open original",
+  // which is the control that says the reader can always get back to the
+  // publisher's text. #525659 is the viewer's page gutter, so the padding is
+  // invisible.
+  {
+    name: '03-pdf-viewer.png',
+    w: 1280,
+    h: 800,
+    source: 'pdf-converted.png',
+    fit: 'contain',
+    background: '#525659',
+  },
   { name: 'promo-tile.png', w: 440, h: 280, page: 'tools/promo-tile.html' },
 ];
 
@@ -166,7 +183,30 @@ async function composite(background, spec) {
     .toBuffer();
 }
 
+/** Resize an already-captured file to the store size, no browser involved. */
+async function fromFile(spec) {
+  const sharp = require(SHARP);
+  const src = path.join(OUT, spec.source);
+  if (!fs.existsSync(src)) {
+    console.warn(`  ! ${spec.source} not found — skipping ${spec.name}`);
+    return;
+  }
+  const before = await sharp(src).metadata();
+  const buffer = await sharp(src)
+    .resize(spec.w, spec.h, {
+      fit: spec.fit ?? 'cover',
+      position: 'top',
+      background: spec.background ?? '#ffffff',
+    })
+    .png()
+    .toBuffer();
+  fs.mkdirSync(OUT, { recursive: true });
+  fs.writeFileSync(path.join(OUT, spec.name), buffer);
+  console.log(`  ${spec.name.padEnd(22)} ${before.width}x${before.height} -> ${spec.w}x${spec.h}  (from ${spec.source})`);
+}
+
 async function shoot(spec) {
+  if (spec.source) return fromFile(spec);
   const win = new BrowserWindow({
     width: spec.w,
     height: spec.h,
