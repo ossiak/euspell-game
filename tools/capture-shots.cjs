@@ -26,6 +26,16 @@ const SHARP = path.resolve(GAME, '..', 'euspell_ext', 'node_modules', 'sharp');
 const SCALE = 2;
 const SHOTS = [
   { name: '01-drill-scored.png', w: 1280, h: 800, page: 'web/index.html', compose: composeDrill },
+  // The popup was captured from a real Chrome at its natural size, so it is
+  // composited onto a converted page rather than upscaled — placed where it
+  // actually hangs, top right, over a page containing the very word it explains.
+  {
+    name: '02-popup-records.png',
+    w: 1280,
+    h: 800,
+    page: 'tools/demo-page.html',
+    overlay: { file: 'popup-records.png', marginRight: 44, top: 40 },
+  },
   { name: 'promo-tile.png', w: 440, h: 280, page: 'tools/promo-tile.html' },
 ];
 
@@ -72,6 +82,62 @@ async function composeDrill(win) {
   })()`);
 }
 
+/**
+ * Lay a real popup capture over a page capture, with a soft shadow so it reads
+ * as floating above the page rather than pasted into it.
+ *
+ * No fake browser chrome is drawn. Inventing a toolbar for the popup to hang
+ * from would look more convincing and would be imitating Chrome's own UI, which
+ * is not something a store listing should do.
+ */
+async function composite(background, spec) {
+  const sharp = require(SHARP);
+  const overlayPath = path.join(OUT, spec.overlay.file);
+  if (!fs.existsSync(overlayPath)) {
+    console.warn(`  ! ${spec.overlay.file} not found — leaving the page uncomposited`);
+    return background;
+  }
+
+  const popup = sharp(overlayPath);
+  const { width, height } = await popup.metadata();
+  const left = spec.w - width - spec.overlay.marginRight;
+  const top = spec.overlay.top;
+
+  // Two pipelines, and it has to be two.
+  //
+  // sharp applies operations in ITS order, not the order they are called, and
+  // composite runs near the end — after blur. So `.composite(...).blur()` blurs
+  // the empty canvas and then pastes a hard-edged rectangle on top, which is
+  // exactly the grey band this went through three attempts to remove. Realising
+  // the composite to a buffer first, then blurring that, is what actually
+  // feathers it. The transparent margin is still needed: a blur has to have
+  // somewhere to bleed into.
+  const pad = 40;
+  const slab = await sharp({
+    create: { width, height, channels: 4, background: { r: 24, g: 24, b: 27, alpha: 0.30 } },
+  }).png().toBuffer();
+  const flat = await sharp({
+    create: {
+      width: width + pad * 2,
+      height: height + pad * 2,
+      channels: 4,
+      background: { r: 0, g: 0, b: 0, alpha: 0 },
+    },
+  })
+    .composite([{ input: slab, left: pad, top: pad }])
+    .png()
+    .toBuffer();
+  const shadow = await sharp(flat).blur(18).png().toBuffer();
+
+  return sharp(background)
+    .composite([
+      { input: shadow, left: left - pad, top: top - pad + 14 },
+      { input: await popup.png().toBuffer(), left, top },
+    ])
+    .png()
+    .toBuffer();
+}
+
 async function shoot(spec) {
   const win = new BrowserWindow({
     width: spec.w,
@@ -98,6 +164,11 @@ async function shoot(spec) {
     note = `${raw.width}x${raw.height} -> ${spec.w}x${spec.h}`;
   } catch (e) {
     note += ` — sharp unavailable (${e.code || e.message.slice(0, 40)})`;
+  }
+
+  if (spec.overlay) {
+    buffer = await composite(buffer, spec);
+    note += ' + ' + spec.overlay.file;
   }
 
   fs.mkdirSync(OUT, { recursive: true });
