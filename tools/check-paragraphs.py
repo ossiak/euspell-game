@@ -7,9 +7,9 @@ Each file holds a passage twice, traditional and euspell, hand-converted. Five
 things can go wrong, and only the first is visible by reading:
 
   1. token counts differ         one dropped word and every colour after it in
-                                 the drill is wrong, silently
+                                 the game is wrong, silently
   2. a changed token is not a    a typo in the manual conversion, which the
-     listed euspelling           drill would then teach as correct
+     listed euspelling           game would then teach as correct
   3. an unchanged token had to   the reverse: a missed edit in the source data,
      change                      scored against the player
   4. the passage misses the      it tests reflexes rather than the reform
@@ -33,7 +33,7 @@ SKIP = {"TEMPLATE.md"}
 REQUIRED = ["id", "title", "author", "year", "death", "source", "revision", "checked"]
 
 # Words where r1 is known to be wrong, so a paragraph containing one cannot be
-# scored fairly: the drill would mark a reasonable answer incorrect. The lexicon
+# scored fairly: the game would mark a reasonable answer incorrect. The lexicon
 # is frozen, so these are avoided rather than fixed — reconsider at r2.
 #
 # Found by comparing British/American pairs against their own families: an

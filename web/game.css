@@ -1,4 +1,4 @@
-/* The conversion drill. Legend and reasoning: ../writing-test.md
+/* The conversion game. Legend and reasoning: ../writing-test.md
  *
  * White background by specification, so the light palette is the only palette.
  * Three channels carry the verdict, because hue alone cannot: colour is the
@@ -24,7 +24,7 @@ body {
   font: 16px/1.6 Georgia, "Times New Roman", serif;
 }
 
-.drill { max-width: 40rem; margin: 0 auto; padding: 2rem 1.25rem 4rem; }
+.game { max-width: 40rem; margin: 0 auto; padding: 2rem 1.25rem 4rem; }
 
 .passage {
   font-size: 1.25rem;

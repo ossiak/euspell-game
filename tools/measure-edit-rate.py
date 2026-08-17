@@ -9,7 +9,7 @@ types — the facts writing-test.md's sizing rests on.
     python measure-edit-rate.py                 # against the frequency corpus
     python measure-edit-rate.py paragraphs.txt  # against real candidate texts
 
-The second form is the one that matters once the 100 paragraphs are chosen:
+The second form is the one that matters once the paragraphs are chosen:
 the corpus is web-derived (`search`, `business` and `health` sit high in its
 edit list), and 1930 literary prose will not match it exactly. Blank-line
 separated paragraphs; the per-paragraph table shows which ones fall inside the
@@ -25,6 +25,7 @@ To check the committed paragraph files themselves — alignment, spellings, fron
 matter — use check-paragraphs.py instead.
 """
 
+import os
 import re
 import sys
 from pathlib import Path
@@ -32,7 +33,12 @@ from pathlib import Path
 from euspell_data import WORD, frequencies, load_lexicon
 
 BAND = (12, 20)  # the acceptance band, in edits
-PARAGRAPHS, WORDS_PER = 100, 85  # the planned set, for the authoring estimate
+# A sample size for the authoring estimate, not a target: how many paragraphs the
+# game ends up with is not decided here, and nothing depends on this number
+# except the projection printed below. Override it with SAMPLE=n in the
+# environment to project for a different set.
+PARAGRAPHS = int(os.environ.get("SAMPLE", 100))
+WORDS_PER = 85  # measured mean, from the paragraphs that exist
 
 
 def measure_corpus(lex):
@@ -180,7 +186,7 @@ def measure_texts(lex, path):
         hits = sum(1 for w in edits if w.lower() in common)
         # Context-dependent words are counted over ALL tokens, not just edits:
         # in its unchanged reading a diatone is not an edit at all, which is
-        # exactly the case the drill must not hand over for free.
+        # exactly the case the game must not hand over for free.
         ctx = sum(1 for e in entries if e and e.is_context)
         ok = BAND[0] <= len(edits) <= BAND[1]
         in_band += ok

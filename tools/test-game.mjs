@@ -1,9 +1,9 @@
-// Tests the drill's scoring without a browser.
+// Tests the game's scoring without a browser.
 //
-//   node --test tools/test-drill.mjs
+//   node --test tools/test-game.mjs
 //
 // classify/redKind/tally are pure and carry the whole argument of the legend, so
-// they are checked here rather than by clicking. drill.js is a classic script;
+// they are checked here rather than by clicking. game.js is a classic script;
 // it is run in a vm with no DOM, which is fine because mount() is never called.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -16,13 +16,13 @@ const HERE = dirname(fileURLToPath(import.meta.url));
 const WEB = resolve(HERE, '..', 'web');
 
 // `window` has to be the sandbox itself: paragraphs.js assigns to window, and
-// drill.js prefers window over globalThis, so they must be the same object.
+// game.js prefers window over globalThis, so they must be the same object.
 const sandbox = {};
 sandbox.window = sandbox;
 vm.createContext(sandbox);
-vm.runInContext(readFileSync(join(WEB, 'drill.js'), 'utf8'), sandbox);
+vm.runInContext(readFileSync(join(WEB, 'game.js'), 'utf8'), sandbox);
 vm.runInContext(readFileSync(join(WEB, 'paragraphs.js'), 'utf8'), sandbox);
-const { classify, redKind, tally } = sandbox.EuspellDrill;
+const { classify, redKind, tally } = sandbox.EuspellGame;
 const DATA = sandbox.EUSPELL_PARAGRAPHS;
 
 const word = (t, e, extra) => Object.assign({ t, e }, extra);

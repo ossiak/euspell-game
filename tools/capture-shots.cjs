@@ -25,7 +25,7 @@ const SHARP = path.resolve(GAME, '..', 'euspell_ext', 'node_modules', 'sharp');
 // 1280x800 is the store size; capture at twice that and resize down.
 const SCALE = 2;
 const SHOTS = [
-  { name: '01-drill-scored.png', w: 1280, h: 800, page: 'web/index.html', compose: composeDrill },
+  { name: '01-game-scored.png', w: 1280, h: 800, page: 'web/index.html', compose: composeGame },
   // The popup was captured from a real Chrome at its natural size, so it is
   // composited onto a converted page rather than upscaled — placed where it
   // actually hangs, top right, over a page containing the very word it explains.
@@ -76,7 +76,7 @@ app.disableHardwareAcceleration();
 app.on('window-all-closed', () => {});
 
 /**
- * Put the drill in a scored state showing EVERY legend colour at once, so one
+ * Put the game in a scored state showing EVERY legend colour at once, so one
  * frame teaches the whole scheme:
  *
  *   green   a correct change
@@ -87,12 +87,12 @@ app.on('window-all-closed', () => {});
  *
  * Then click the red word so the explanation panel is showing what it is for.
  */
-async function composeDrill(win) {
+async function composeGame(win) {
   await win.webContents.executeJavaScript(`(() => {
     // Poe: 70 words, two context words, both of which want the traditional
     // form — which is the only way blue can appear.
     const only = window.EUSPELL_PARAGRAPHS.paragraphs.filter((p) => p.id === '005');
-    EuspellDrill.mount(document.getElementById('drill'), { paragraphs: only });
+    EuspellGame.mount(document.getElementById('game'), { paragraphs: only });
 
     const para = only[0];
     let missed = false, wrong = null;

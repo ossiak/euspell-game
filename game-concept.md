@@ -22,10 +22,10 @@ ships.
 ## First, what the game is actually for
 
 There is a trap here, and it is worth naming before any design. The obvious game
-is a spelling drill — flashcards, streaks, Duolingo for Euspell. **That game
+is a spelling game — flashcards, streaks, Duolingo for Euspell. **That game
 argues against the reform.** Euspell's entire pitch is *you don't have to learn
 this*: four fifths untouched, 85% of changes one letter, "a reader familiar with
-either spelling should be able to read the other comfortably." A drill says the
+either spelling should be able to read the other comfortably." A game says the
 opposite — that this is a thing requiring study. It would undercut the paper on
 the paper's strongest claim.
 

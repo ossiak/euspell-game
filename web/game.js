@@ -1,9 +1,9 @@
-/* The conversion drill. Design and reasoning: ../writing-test.md
+/* The conversion game. Design and reasoning: ../writing-test.md
  *
  * A classic script, not an ES module, so index.html opens from file:// —
  * Chrome blocks module imports and fetch() there, and opening the file directly
  * is how this gets demoed and screenshotted. It exposes one global; the site
- * embed calls EuspellDrill.mount(element, window.EUSPELL_PARAGRAPHS).
+ * embed calls EuspellGame.mount(element, window.EUSPELL_PARAGRAPHS).
  *
  * No lexicon at runtime. Scoring compares against the stored reference, so the
  * whole payload is web/paragraphs.js.
@@ -84,7 +84,7 @@
     var state = { index: -1, hint: false, usedHint: false, usedConvert: false, scored: false };
 
     root.innerHTML =
-      '<div class="drill">' +
+      '<div class="game">' +
       '  <p class="passage" id="passage"></p>' +
       '  <div class="bar">' +
       '    <button type="button" data-act="start">Start</button>' +
@@ -274,5 +274,5 @@
     start();
   }
 
-  global.EuspellDrill = { mount: mount, classify: classify, redKind: redKind, tally: tally };
+  global.EuspellGame = { mount: mount, classify: classify, redKind: redKind, tally: tally };
 }(typeof window !== 'undefined' ? window : globalThis));

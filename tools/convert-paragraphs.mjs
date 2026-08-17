@@ -3,7 +3,7 @@
 //
 //   node tools/convert-paragraphs.mjs sample_paragraphs1.txt
 //
-// This is the step that makes 100 hand-checked paragraphs tractable. Converting
+// This is the step that makes a set of hand-checked paragraphs tractable. Converting
 // them by hand is a week of tedium and produces mistakes nobody can see;
 // converting them with the engine and READING the result is an afternoon, and
 // the reviewer is auditing a machine rather than racing it. Every file it writes

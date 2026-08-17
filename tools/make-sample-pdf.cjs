@@ -18,7 +18,7 @@
  * constraint — the viewer converts text, so a scanned PDF would show nothing
  * converted and the shot would prove the opposite of its point.
  *
- * The passages are the ones already cleared for the drill: published 1930 or
+ * The passages are the ones already cleared for the game: published 1930 or
  * earlier AND author died 1955 or earlier, so they are public domain in the US
  * and in life+70 jurisdictions alike. Text is read from paragraphs/*.md so the
  * two never drift, and stays in TRADITIONAL spelling — the viewer does the

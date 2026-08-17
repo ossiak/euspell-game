@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Euspell — the conversion drill</title>
-<link rel="stylesheet" href="drill.css">
+<title>Euspell — the conversion game</title>
+<link rel="stylesheet" href="game.css">
 </head>
 <body>
 
@@ -12,14 +12,14 @@
   Opens straight from the filesystem: no server, no build, no network. That is
   deliberate — it is how the page gets demoed offline and screenshotted for the
   store listing, and it rules out ES modules and fetch(), which Chrome blocks on
-  file://. paragraphs.js assigns a global; drill.js reads it.
+  file://. paragraphs.js assigns a global; game.js reads it.
 -->
-<main id="drill"></main>
+<main id="game"></main>
 
 <script src="paragraphs.js"></script>
-<script src="drill.js"></script>
+<script src="game.js"></script>
 <script>
-  EuspellDrill.mount(document.getElementById('drill'), window.EUSPELL_PARAGRAPHS);
+  EuspellGame.mount(document.getElementById('game'), window.EUSPELL_PARAGRAPHS);
 </script>
 
 </body>

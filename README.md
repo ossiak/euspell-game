@@ -9,20 +9,20 @@ Nothing is built yet. This folder currently holds the thinking.
 | Note | What it is |
 | --- | --- |
 | [game-concept.md](game-concept.md) | The design discussion: what a Euspell game is for, the one worth building, and the recommendation not to build a game at all yet |
-| [writing-test.md](writing-test.md) | The conversion drill — convert a paragraph by hand and be scored on it. Paragraph sizing, the open problems in the spec, and how to implement it on desktop and mobile |
+| [writing-test.md](writing-test.md) | The conversion game — convert a paragraph by hand and be scored on it. Paragraph sizing, the open problems in the spec, and how to implement it on desktop and mobile |
 | [store-screenshots.md](store-screenshots.md) | The Chrome Web Store screenshot brief, parked here because the demo page may produce the imagery |
 
-| The drill | |
+| The game | |
 | --- | --- |
-| [web/index.html](web/index.html) | The conversion drill. Opens straight from the filesystem — no server, no build, no network |
-| [web/drill.js](web/drill.js) | The page. One global, `EuspellDrill.mount(el, data)`; no lexicon at runtime |
+| [web/index.html](web/index.html) | The conversion game. Opens straight from the filesystem — no server, no build, no network |
+| [web/game.js](web/game.js) | The page. One global, `EuspellGame.mount(el, data)`; no lexicon at runtime |
 | [web/paragraphs.js](web/paragraphs.js) | Generated data: the passages plus a few flags per word |
 
 | Tool | What it does |
 | --- | --- |
 | [tools/convert-paragraphs.mjs](tools/convert-paragraphs.mjs) | Drafts `paragraphs/*.md` from a candidates file, converting with the real engine. Never overwrites an existing file |
 | [tools/build-data.mjs](tools/build-data.mjs) | `paragraphs/*.md` → `web/paragraphs.js`. The only step that reads the lexicon |
-| [tools/test-drill.mjs](tools/test-drill.mjs) | The scoring rules, checked without a browser |
+| [tools/test-game.mjs](tools/test-game.mjs) | The scoring rules, checked without a browser |
 | [tools/capture-shots.cjs](tools/capture-shots.cjs) | Store screenshots, captured from the real page via Eupub's Electron |
 
 Capture: `NODE_PATH=../Eupub/node_modules ../Eupub/node_modules/.bin/electron tools/capture-shots.cjs`
@@ -33,7 +33,7 @@ Capture: `NODE_PATH=../Eupub/node_modules ../Eupub/node_modules/.bin/electron to
 
 | Content | |
 | --- | --- |
-| [paragraphs/](paragraphs/) | The 100 passages, one file each, traditional and euspell. Start from `TEMPLATE.md` |
+| [paragraphs/](paragraphs/) | The passages, one file each, traditional and euspell. Start from `TEMPLATE.md` |
 
 ## The through-line
 
@@ -42,8 +42,8 @@ several problems at once: it is the game's best mechanic, the missing product
 demo, episode 10's blocked cold open, and a candidate source for the store
 screenshots. It reuses the existing JavaScript engine and needs no art.
 
-The conversion drill is the other half of the same idea: *Beat the classifier*
-tests whether a player can reason about the reform, the drill tests whether they
+The conversion game is the other half of the same idea: *Beat the classifier*
+tests whether a player can reason about the reform, the game tests whether they
 can write it. Both run on the lexicon that already exists, which is why neither
 needs content authored for it.
 

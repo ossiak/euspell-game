@@ -1,9 +1,9 @@
-# The conversion drill — a Euspell writing test
+# The conversion game — a Euspell writing test
 
 **14 August 2026.** A design note on the text-based game that tests whether a
 player can *write* euspell, as distinct from
 [game-concept.md](game-concept.md)'s *Beat the classifier*, which tests whether
-they can reason about it. The two are complementary: this one drills the
+they can reason about it. The two are complementary: this one games the
 orthography, that one argues the case.
 
 The specification below is as proposed, with the numbers and the open problems
@@ -13,7 +13,7 @@ that came out of measuring it.
 
 ## The specification
 
-100 paragraphs from recently-public-domain literature, stored as **original and
+Paragraphs from recently-public-domain literature, stored as **original and
 euspell, manually checked**. One is chosen at random and shown in traditional
 spelling. The player converts it by editing.
 
@@ -245,7 +245,7 @@ set: `anywun's` against `anywun'z`, possessive against *is*.
 
 Nothing in the visual scheme distinguishes rows 3 and 4 of the table above, and
 it should not try. **The colour grades; the explanation teaches.** Without it
-the drill is a marking scheme, and the four reds all mean the same thing to the
+the game is a marking scheme, and the four reds all mean the same thing to the
 player who earned them.
 
 It is also the fix for blue's weakness. Someone who left `records` alone by
@@ -346,7 +346,7 @@ Print the legend itself in the same three channels, so it teaches the encoding
 rather than just naming it.
 
 **Why this matters past the game.** The 94%-accurate classifier is the
-project's central technical claim. A drill that scores a wrong reading
+project's central technical claim. A game that scores a wrong reading
 identically to an invented word cannot demonstrate that claim — it cannot even
 see it.
 
@@ -369,7 +369,7 @@ needs to remember the last one shown.
 
 ---
 
-## Choosing the 100 paragraphs
+## Choosing the paragraphs
 
 Accept a paragraph only if:
 
@@ -535,9 +535,10 @@ introduced and caught while building the tool.
 
 **Nothing needs the engine or the lexicon at runtime.** The paragraphs are
 stored as original *and* euspell, hand-checked, so scoring is a comparison
-against stored text rather than a conversion. The payload is 100 paragraph pairs
-plus a per-token flag — tens of KB gzipped, against **13 MB for
-`dist/lexicon.data`**. That one fact removes most of the architecture.
+against stored text rather than a conversion. The payload is the paragraph pairs
+plus a per-token flag — tens of KB gzipped whatever the set grows to, against
+**13 MB for `dist/lexicon.data`**. That one fact removes most of the
+architecture.
 
 (*Beat the classifier* is not the same: showing what the SVM chose does want the
 engine. Worth knowing the two games have different weights before sharing code
@@ -632,7 +633,7 @@ chosen paragraphs:
 | | |
 | --- | --- |
 | Changed types in the lexicon | 13,229 |
-| **Expected to appear across 100 paragraphs** | **~441** |
+| **Expected to appear, per 100 paragraphs** | **~441** |
 | Context-dependent types expected | ~281 |
 
 Roughly 700 items with overlap, against a 205,493-entry lexicon — and frozen
@@ -681,7 +682,7 @@ errors" page on the site.
 
 ### The build step earns its keep twice
 
-A script turning the 100 pairs into token JSON has to tokenize and consult the
+A script turning the pairs into token JSON has to tokenize and consult the
 lexicon anyway, so have it **diff each stored euspell paragraph against what the
 engine produces**. A hundred hand-checked conversions will contain mistakes;
 this catches them before a player does, using the engine's own tokenizer rather
@@ -691,7 +692,7 @@ keeps no runtime dependency on `euspell_ext`.
 ### Consequences to catch now
 
 **The privacy policy needs a line.** It currently states the site stores exactly
-one `localStorage` value, `euspell-theme`. The drill wants a last-paragraph-shown
+one `localStorage` value, `euspell-theme`. The game wants a last-paragraph-shown
 memory (problem 9) and probably progress. Still nothing leaving the device, but
 the page has to say so.
 

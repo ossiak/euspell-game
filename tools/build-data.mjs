@@ -1,9 +1,9 @@
-// Turns paragraphs/*.md into web/paragraphs.js — everything the drill needs at
+// Turns paragraphs/*.md into web/paragraphs.js — everything the game needs at
 // runtime, and nothing it does not.
 //
 //   node tools/build-data.mjs
 //
-// The drill loads NO lexicon. Scoring is a comparison against stored text, so
+// The game loads NO lexicon. Scoring is a comparison against stored text, so
 // the payload is the paragraphs plus a few flags per word — tens of KB against
 // 13 MB for dist/lexicon.data. This is the only step that consults the lexicon,
 // and its output is committed so a deploy needs no euspell_ext checkout.
