@@ -35,13 +35,33 @@ body {
 /* A word, not a form field: no border until it has focus, so the paragraph
    still reads as a paragraph rather than as eighty input boxes. */
 .w {
+  /* inline-block, not inline: iOS Safari cannot place the caret inside a small
+     INLINE contenteditable fragment embedded in non-editable text — it pins the
+     caret to the end and refuses mid-word edits. Giving each word its own
+     inline-block box fixes caret placement. (Chrome/Android edits inline fine.) */
+  display: inline-block;
+  -webkit-user-select: text;
+  user-select: text;
   border-radius: 2px;
   padding: 0 1px;
   outline: none;
   white-space: pre;
 }
-.w[contenteditable="plaintext-only"]:hover { background: #f4f4f5; }
-.w[contenteditable="plaintext-only"]:focus { background: #eef2ff; box-shadow: 0 0 0 2px var(--blue); }
+/* The editable words are real <input>s (for iOS caret handling), stripped of
+   native field chrome so they read as words set into the prose. */
+input.w {
+  font: inherit;
+  color: inherit;
+  -webkit-appearance: none;
+  appearance: none;
+  border: 0;
+  margin: 0;
+  background: transparent;
+  vertical-align: baseline;
+  box-sizing: content-box;
+}
+input.w:hover { background: #f4f4f5; }
+input.w:focus { background: #eef2ff; box-shadow: 0 0 0 2px var(--blue); }
 
 /* Bold = this word needed a reading decided. Applied in every state, so its
    failures are as visible as its successes. */

@@ -104,37 +104,66 @@
     var attrib = root.querySelector('#attrib');
     var hintBtn = root.querySelector('[data-act="hint"]');
 
+    // Size an editable input to its text, so the paragraph reads as prose rather
+    // than a row of boxes. Measured with a hidden mirror that inherits the
+    // passage's own font — pixel-accurate, where a canvas estimate under-sized
+    // the input, and an input whose text OVERFLOWS only lets iOS place the caret
+    // at the two scroll ends, never mid-word. ctx words render bold, so the
+    // mirror is set bold to match. The mirror has no 'w' class, so it never
+    // shows up in the '.w' queries used for reading and scoring.
+    var mirror = document.createElement('span');
+    mirror.setAttribute('aria-hidden', 'true');
+    mirror.style.cssText = 'position:absolute;left:-9999px;top:0;visibility:hidden;white-space:pre;';
+    function sizeInput(el, bold) {
+      mirror.style.fontWeight = bold ? '700' : '400';
+      mirror.textContent = el.value || '';
+      el.style.width = (mirror.offsetWidth + 3) + 'px';
+    }
+
     function current() { return paragraphs[state.index]; }
 
     /** Draw the paragraph. `field` true = editable words, false = plain text. */
     function draw(getText, field) {
       var para = current();
       passage.innerHTML = '';
+      passage.appendChild(mirror); // hidden; sizeInput measures text against it
       para.tokens.forEach(function (tok, i) {
         if (typeof tok === 'string') {
           passage.appendChild(document.createTextNode(tok));
           return;
         }
-        var span = document.createElement('span');
-        span.className = 'w';
-        span.dataset.i = String(i);
-        span.textContent = getText(tok);
+        var el;
         if (field) {
-          span.contentEditable = 'plaintext-only';
-          span.spellcheck = false;
-          // Autocorrect turns euspell back into English on some platforms.
-          span.setAttribute('autocorrect', 'off');
-          span.setAttribute('autocapitalize', 'off');
+          // A real <input>, not a contenteditable span. iOS Safari cannot place
+          // the caret inside a short inline editable — it pins the caret to the
+          // end and refuses mid-word edits — whereas inputs have first-class
+          // caret handling. Autocorrect off, or the platform turns euspell back
+          // into English. Scoring re-renders these as spans (see score) so the
+          // wavy verdict underline can paint, which an <input>'s value cannot.
+          el = document.createElement('input');
+          el.type = 'text';
+          el.value = getText(tok);
+          el.spellcheck = false;
+          el.setAttribute('autocorrect', 'off');
+          el.setAttribute('autocapitalize', 'off');
+          el.setAttribute('autocomplete', 'off');
+        } else {
+          el = document.createElement('span');
+          el.textContent = getText(tok);
         }
-        if (tok.c) span.classList.add('ctx');
-        passage.appendChild(span);
+        el.className = 'w';
+        el.dataset.i = String(i);
+        if (tok.c) el.classList.add('ctx');
+        passage.appendChild(el);
+        if (field) sizeInput(el, !!tok.c);
       });
     }
 
     function answers() {
       var out = {};
       passage.querySelectorAll('.w').forEach(function (el) {
-        out[Number(el.dataset.i)] = el.textContent.trim();
+        var v = el.tagName === 'INPUT' ? el.value : el.textContent;
+        out[Number(el.dataset.i)] = v.trim();
       });
       return out;
     }
@@ -179,12 +208,19 @@
     function score() {
       var para = current();
       var given = answers();
-      passage.querySelectorAll('.w').forEach(function (el) {
+      // Replace each editable input with a static span of what was typed, so
+      // colour and the wavy right/wrong underline render (an <input> paints
+      // neither on its value), and the answer is frozen.
+      Array.prototype.slice.call(passage.querySelectorAll('.w')).forEach(function (el) {
         var i = Number(el.dataset.i);
         var verdict = classify(para.tokens[i], given[i]);
-        el.classList.remove('blue', 'green', 'orange', 'red');
-        if (verdict !== 'none') el.classList.add(verdict);
-        el.contentEditable = 'false';
+        var span = document.createElement('span');
+        span.className = 'w';
+        span.dataset.i = String(i);
+        span.textContent = given[i];
+        if (para.tokens[i].c) span.classList.add('ctx');
+        if (verdict !== 'none') span.classList.add(verdict);
+        el.parentNode.replaceChild(span, el);
       });
       state.scored = true;
 
@@ -239,6 +275,47 @@
     passage.addEventListener('keydown', function (e) {
       if (e.key === 'Enter') e.preventDefault();
     });
+
+    // Grow or shrink an input to fit as the player edits it.
+    passage.addEventListener('input', function (e) {
+      if (e.target.tagName === 'INPUT' && e.target.classList.contains('w')) {
+        sizeInput(e.target, e.target.classList.contains('ctx'));
+      }
+    });
+
+    // Tap a word to select all of it, so the player can type the replacement.
+    // iOS won't let the page select on focus — it collapses the selection when
+    // it places its own tap-caret afterwards — so intercept the tap itself:
+    // preventDefault on touchend stops that caret placement, then we focus and
+    // select the whole value. EVERY quick, stationary tap re-selects, so tapping
+    // is consistent and never lands in iOS's snap-to-end; a long-press/drag is
+    // left alone, so the magnifier still positions a precise caret for fine edits.
+    var tapAt = 0, tapMoved = false, tapX = 0, tapY = 0;
+    passage.addEventListener('touchstart', function (e) {
+      var el = e.target;
+      if (el.tagName !== 'INPUT' || !el.classList.contains('w')) return;
+      tapAt = Date.now(); tapMoved = false;
+      var t = e.touches[0]; if (t) { tapX = t.clientX; tapY = t.clientY; }
+    }, { passive: true });
+    passage.addEventListener('touchmove', function (e) {
+      var t = e.touches[0];
+      if (t && (Math.abs(t.clientX - tapX) > 8 || Math.abs(t.clientY - tapY) > 8)) tapMoved = true;
+    }, { passive: true });
+    passage.addEventListener('touchend', function (e) {
+      var el = e.target;
+      if (el.tagName !== 'INPUT' || !el.classList.contains('w')) return;
+      var quickTap = !tapMoved && (Date.now() - tapAt) < 350;
+      if (quickTap) {
+        e.preventDefault(); // stop iOS placing a caret, which would collapse the selection
+        el.focus();
+        var selectAll = function () { try { el.setSelectionRange(0, el.value.length); } catch (x) {} };
+        selectAll();
+        // iOS re-places its own tap-caret a tick later and collapses the
+        // selection, so re-apply it across a couple of frames to win the race.
+        setTimeout(selectAll, 0);
+        setTimeout(selectAll, 40);
+      }
+    }, { passive: false });
 
     root.querySelector('.bar').addEventListener('click', function (e) {
       var act = e.target.dataset && e.target.dataset.act;
