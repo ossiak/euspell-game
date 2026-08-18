@@ -15,4 +15,4 @@ A great deal has been and is being constantly said about "sweat-shop" work and c
 
 ## euspell
 
-A great deal haz been and iz being constantly said about "swett-shop" work and conditions. The writer haz graet sympathy with those hoo ar overworkd, but on the whole a graeter sympathy for those hoo ar under paid. For evry individual, huwever, hoo iz overworkd, there ar a hundred hoo intentionally under work — graetly under work — evry day ov their lives.
+A graet deal haz been and iz being constantly said about "swett-shop" work and conditions. The writer haz graet sympathy with those hoo ar overworkd, but on the whole a graeter sympathy for those hoo ar under paid. For evry individual, huwever, hoo iz overworkd, there ar a hundred hoo intentionally under work — graetly under work — evry day ov their lives.
