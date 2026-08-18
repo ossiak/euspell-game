@@ -9,13 +9,24 @@
 <body>
 
 <!--
+  The link home is absolute, not "/". This page is also opened straight from the
+  filesystem for offline demos and store screenshots, where "/" resolves to the
+  disk root and a relative "../" lands on a directory listing. An absolute URL is
+  the only form that behaves in both places.
+-->
+<header class="masthead">
+  <a class="home" href="https://euspell.org/">&#8592;&#8194;Euspell</a>
+  <span class="what">The conversion game</span>
+</header>
+
+<main id="game"></main>
+
+<!--
   Opens straight from the filesystem: no server, no build, no network. That is
   deliberate — it is how the page gets demoed offline and screenshotted for the
   store listing, and it rules out ES modules and fetch(), which Chrome blocks on
   file://. paragraphs.js assigns a global; game.js reads it.
 -->
-<main id="game"></main>
-
 <script src="paragraphs.js"></script>
 <script src="game.js"></script>
 <script>

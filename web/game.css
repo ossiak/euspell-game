@@ -113,3 +113,26 @@ input.w:focus { background: #eef2ff; box-shadow: 0 0 0 2px var(--blue); }
 }
 
 .attrib { font-size: .8rem; color: var(--muted); margin-top: 2rem; }
+
+/* Masthead. The game is reachable on its own URL, so it needs a way back to the
+   site; it matches the passage column rather than spanning the window. */
+.masthead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: .5rem 1rem;
+  max-width: 40rem;
+  margin: 0 auto;
+  padding: 1.25rem 1.25rem 0;
+}
+.masthead .home {
+  font: 600 1rem/1.4 Georgia, "Times New Roman", serif;
+  color: var(--ink);
+  text-decoration: none;
+  /* Generous hit area: this is the one link on a page played with thumbs. */
+  padding: .35rem 0;
+}
+.masthead .home:hover,
+.masthead .home:focus-visible { color: var(--blue); text-decoration: underline; }
+.masthead .what { font-size: .85rem; color: var(--muted); }
