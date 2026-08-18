@@ -1,10 +1,10 @@
 /* The conversion game. Legend and reasoning: ../writing-test.md
  *
  * White background by specification, so the light palette is the only palette.
- * Three channels carry the verdict, because hue alone cannot: colour is the
+ * Three channels carry the verdict, because hue alone cannot: color is the
  * five-way state, a wavy underline is the right/wrong binary that survives
- * colour blindness and greyscale, and bold marks the words that needed a
- * reading decided. Every colour below clears WCAG AA on white — the obvious
+ * color blindness and grayscale, and bold marks the words that needed a
+ * reading decided. Every color below clears WCAG AA on white — the obvious
  * #FFA500 and #FF0000 do not, at 1.97:1 and 4.00:1.
  */
 :root {

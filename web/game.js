@@ -18,7 +18,7 @@
    * real logic, and a browser is a poor place to check it.
    *
    * `none` is everything that was never in play: roughly 80% of the text, left
-   * uncoloured so colour marks the exceptions rather than the page.
+   * uncolored so color marks the exceptions rather than the page.
    * `blue` can only arise on a context-dependent word, since a single-euspelling
    * entry always changes — so blue IS that class, in the half of cases where
    * the sentence wanted the traditional form.
@@ -35,7 +35,7 @@
     return 'red';
   }
 
-  /** Why a red is red — the four errors colour deliberately does not separate.
+  /** Why a red is red — the four errors color deliberately does not separate.
    *
    * Order matters. The wrong-reading test has to come first: when a diatone's
    * expected form is the TRADITIONAL one, e === t, and checking that first
@@ -209,7 +209,7 @@
       var para = current();
       var given = answers();
       // Replace each editable input with a static span of what was typed, so
-      // colour and the wavy right/wrong underline render (an <input> paints
+      // color and the wavy right/wrong underline render (an <input> paints
       // neither on its value), and the answer is frozen.
       Array.prototype.slice.call(passage.querySelectorAll('.w')).forEach(function (el) {
         var i = Number(el.dataset.i);
@@ -235,7 +235,7 @@
         pad('score', t.percent + '%' + (t.usedHint || state.usedConvert ? '   (assisted)' : '')),
       ];
       readout.textContent = lines.join('\n');
-      panel.textContent = 'Click any coloured word for an explanation.';
+      panel.textContent = 'Click any colored word for an explanation.';
     }
 
     function pad(label, value) {
