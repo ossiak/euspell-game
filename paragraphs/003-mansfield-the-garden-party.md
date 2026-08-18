@@ -2,7 +2,7 @@
 id: 003
 title: The Garden Party
 author: Mansfield
-year:
+year: 1922
 death:
 source:
 revision: r1
