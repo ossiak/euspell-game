@@ -120,8 +120,7 @@ input.w:focus { background: #eef2ff; box-shadow: 0 0 0 2px var(--blue); }
   display: flex;
   flex-wrap: wrap;
   align-items: baseline;
-  justify-content: space-between;
-  gap: .5rem 1rem;
+  gap: .25rem .6rem;
   max-width: 40rem;
   margin: 0 auto;
   padding: 1.25rem 1.25rem 0;
@@ -135,4 +134,8 @@ input.w:focus { background: #eef2ff; box-shadow: 0 0 0 2px var(--blue); }
 }
 .masthead .home:hover,
 .masthead .home:focus-visible { color: var(--blue); text-decoration: underline; }
+/* Kept next to the wordmark rather than pushed to the far edge: at this column
+   width space-between left 400px of nothing between them, and they stopped
+   reading as one header. The rule below is the join. */
 .masthead .what { font-size: .85rem; color: var(--muted); }
+.masthead .what::before { content: "/"; margin-right: .6rem; color: var(--rule); }
