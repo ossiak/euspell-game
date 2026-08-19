@@ -4,7 +4,15 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Euspell — the conversion game</title>
-<link rel="stylesheet" href="game.css">
+<!--
+  The ?v= is a cache buster and has to be bumped whenever one of these files
+  changes. The server sends Cache-Control: max-age=604800 for .css and .js but
+  nothing for .html, so without it a returning visitor pairs fresh markup with a
+  week-old stylesheet - which is how the masthead once arrived unstyled. Chromium
+  drops the query when resolving file://, so opening this page from disk still
+  works.
+-->
+<link rel="stylesheet" href="game.css?v=2026-08-19">
 </head>
 <!--
   The extension must not touch this page. The passage is presented in traditional
@@ -33,8 +41,8 @@
   store listing, and it rules out ES modules and fetch(), which Chrome blocks on
   file://. paragraphs.js assigns a global; game.js reads it.
 -->
-<script src="paragraphs.js"></script>
-<script src="game.js"></script>
+<script src="paragraphs.js?v=2026-08-19"></script>
+<script src="game.js?v=2026-08-19"></script>
 <script>
   EuspellGame.mount(document.getElementById('game'), window.EUSPELL_PARAGRAPHS);
 </script>
