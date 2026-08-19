@@ -6,7 +6,13 @@
 <title>Euspell — the conversion game</title>
 <link rel="stylesheet" href="game.css">
 </head>
-<body>
+<!--
+  The extension must not touch this page. The passage is presented in traditional
+  spelling for the player to convert by hand, and scored against the euspell text
+  in paragraphs.js - converting it would rewrite the question and hand over the
+  answer. Honoured by the extension's dom-walker, which climbs the ancestor chain.
+-->
+<body data-euspell="off">
 
 <!--
   The link home is absolute, not "/". This page is also opened straight from the
