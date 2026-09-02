@@ -1,15 +1,20 @@
 /* The conversion game. Legend and reasoning: ../writing-test.md
  *
  * White background by specification, so the light palette is the only palette.
- * Three channels carry the verdict, because hue alone cannot: color is the
- * five-way state, a wavy underline is the right/wrong binary that survives
- * color blindness and grayscale, and bold marks the words that needed a
- * reading decided. Every color below clears WCAG AA on white — the obvious
- * #FFA500 and #FF0000 do not, at 1.97:1 and 4.00:1.
+ * Two channels carry the verdict, because hue alone cannot: color is the
+ * five-way state, and a wavy underline is the right/wrong binary that survives
+ * color blindness and grayscale. Every color below clears WCAG AA on white —
+ * the obvious #FFA500 and #FF0000 do not, at 1.97:1 and 4.00:1.
+ *
+ * There was a third channel: bold, marking the words that needed a reading
+ * decided. It was removed. Before the player types anything it points at the
+ * exact words the Hint button exists to reveal, so the puzzle arrives already
+ * half-solved — and it was wrong about which words those were, bolding "minute"
+ * and "motives".
  */
 :root {
   --ink: #000000;
-  --blue: #1D4ED8;   /* correctly unchanged   6.70:1 */
+  --blue: #1D4ED8;   /* reading called right  6.70:1 */
   --green: #15803D;  /* correctly changed     5.02:1 */
   --orange: #B45309; /* should have changed   5.02:1 */
   --red: #B91C1C;    /* changed wrongly       6.47:1 */
@@ -25,6 +30,24 @@ body {
 }
 
 .game { max-width: 40rem; margin: 0 auto; padding: 2rem 1.25rem 4rem; }
+
+/* Help text, sharing the game's column so the two read as one page. Set smaller
+   and muted: it is scaffolding for a first visit, and it must not compete with
+   the passage, which is the thing to be read. The four color names carry their
+   own colors, which is the shortest legend there is. */
+.help {
+  max-width: 40rem;
+  margin: 0 auto;
+  padding: 1.5rem 1.25rem 0;
+  color: var(--muted);
+  font-size: 0.95rem;
+  line-height: 1.65;
+}
+.help b { color: var(--ink); }
+.help .blue { color: var(--blue); font-weight: 700; }
+.help .green { color: var(--green); font-weight: 700; }
+.help .orange { color: var(--orange); font-weight: 700; }
+.help .red { color: var(--red); font-weight: 700; }
 
 .passage {
   font-size: 1.25rem;
@@ -62,10 +85,6 @@ input.w {
 }
 input.w:hover { background: #f4f4f5; }
 input.w:focus { background: #eef2ff; box-shadow: 0 0 0 2px var(--blue); }
-
-/* Bold = this word needed a reading decided. Applied in every state, so its
-   failures are as visible as its successes. */
-.w.ctx { font-weight: 700; }
 
 /* Hint and Convert use a solid underline; the error marks below use a wavy one,
    so the two never mean the same thing. */
@@ -127,13 +146,20 @@ input.w:focus { background: #eef2ff; box-shadow: 0 0 0 2px var(--blue); }
 }
 .masthead .home {
   font: 600 1rem/1.4 Georgia, "Times New Roman", serif;
-  color: var(--ink);
-  text-decoration: none;
+  /* Blue and underlined at rest, not only on hover: it reads as "Home", a word
+     with no arrow in front of it any more, and a touch screen has no hover to
+     reveal that it is a link at all. */
+  color: var(--blue);
+  text-decoration: underline;
+  text-underline-offset: 3px;
   /* Generous hit area: this is the one link on a page played with thumbs. */
   padding: .35rem 0;
 }
+/* The resting state already carries the color and the underline, so hover has
+   to say something else. Thickening the rule is the quietest thing available
+   that is not a second color. */
 .masthead .home:hover,
-.masthead .home:focus-visible { color: var(--blue); text-decoration: underline; }
+.masthead .home:focus-visible { text-decoration-thickness: 2px; }
 /* Kept next to the wordmark rather than pushed to the far edge: at this column
    width space-between left 400px of nothing between them, and they stopped
    reading as one header. The rule below is the join. */

@@ -19,17 +19,23 @@
    *
    * `none` is everything that was never in play: roughly 80% of the text, left
    * uncolored so color marks the exceptions rather than the page.
-   * `blue` can only arise on a context-dependent word, since a single-euspelling
-   * entry always changes — so blue IS that class, in the half of cases where
-   * the sentence wanted the traditional form.
+   *
+   * `blue` is a context-dependent word answered correctly, whichever way the
+   * sentence went. It used to mean "correctly unchanged", which quietly marked
+   * only half of them: a word like "wants" whose sentence wanted "wantz" was
+   * scored green, indistinguishable from an ordinary spelling change, and the
+   * hardest call in the passage went unremarked. What the player did there was
+   * decide a reading, and that is the thing worth its own color. `green` is now
+   * exactly what is left: an ordinary word changed correctly.
    */
   function classify(token, typed) {
     var expected = token.e;
     var traditional = token.t;
     var answer = (typed === undefined || typed === null) ? '' : typed;
     if (answer === expected) {
+      if (token.c) return 'blue';
       if (expected !== traditional) return 'green';
-      return token.c ? 'blue' : 'none';
+      return 'none';
     }
     if (answer === traditional) return 'orange'; // should have changed, did not
     return 'red';
@@ -52,7 +58,7 @@
   function tally(tokens, answers, usedHint) {
     var t = {
       blue: 0, green: 0, orange: 0, red: 0, none: 0,
-      needed: 0, changedByPlayer: 0, wrongReading: 0,
+      needed: 0, found: 0, changedByPlayer: 0, wrongReading: 0,
       commonRight: 0, reformRight: 0, context: 0, contextRight: 0,
       usedHint: !!usedHint,
     };
@@ -60,12 +66,23 @@
       if (typeof tok === 'string') return;
       var typed = answers[i];
       var verdict = classify(tok, typed);
+      var needsChange = tok.e !== tok.t;
+      var right = verdict === 'green' || verdict === 'blue';
       t[verdict] += 1;
-      if (tok.e !== tok.t) t.needed += 1;
+      if (needsChange) t.needed += 1;
       if (typed !== tok.t) t.changedByPlayer += 1;
       if (verdict === 'red' && redKind(tok, typed) === 'wrong-reading') t.wrongReading += 1;
-      if (verdict === 'green') { if (tok.k) t.commonRight += 1; else t.reformRight += 1; }
-      if (tok.c) { t.context += 1; if (verdict === 'blue' || verdict === 'green') t.contextRight += 1; }
+      // "changes found" counts edits made correctly, so it cannot read off green
+      // alone any more: a context word whose sentence wanted the changed form is
+      // blue, and it was still a change found. Counting green only would report
+      // "3 of 4" to a player who got all four right.
+      if (right && needsChange) {
+        t.found += 1;
+        if (tok.k) t.commonRight += 1; else t.reformRight += 1;
+      }
+      // Every correct answer on a context word is blue now, in both directions,
+      // so this no longer has to admit green as well.
+      if (tok.c) { t.context += 1; if (verdict === 'blue') t.contextRight += 1; }
     });
     // The legend IS the scoring model: none drops out, and blue correctly
     // raises the denominator — leaving `records` alone was a decision.
@@ -108,14 +125,14 @@
     // than a row of boxes. Measured with a hidden mirror that inherits the
     // passage's own font — pixel-accurate, where a canvas estimate under-sized
     // the input, and an input whose text OVERFLOWS only lets iOS place the caret
-    // at the two scroll ends, never mid-word. ctx words render bold, so the
-    // mirror is set bold to match. The mirror has no 'w' class, so it never
-    // shows up in the '.w' queries used for reading and scoring.
+    // at the two scroll ends, never mid-word. Every word now renders at one
+    // weight, so the mirror needs no weight of its own — it inherits the
+    // passage's. The mirror has no 'w' class, so it never shows up in the '.w'
+    // queries used for reading and scoring.
     var mirror = document.createElement('span');
     mirror.setAttribute('aria-hidden', 'true');
     mirror.style.cssText = 'position:absolute;left:-9999px;top:0;visibility:hidden;white-space:pre;';
-    function sizeInput(el, bold) {
-      mirror.style.fontWeight = bold ? '700' : '400';
+    function sizeInput(el) {
       mirror.textContent = el.value || '';
       el.style.width = (mirror.offsetWidth + 3) + 'px';
     }
@@ -153,9 +170,8 @@
         }
         el.className = 'w';
         el.dataset.i = String(i);
-        if (tok.c) el.classList.add('ctx');
         passage.appendChild(el);
-        if (field) sizeInput(el, !!tok.c);
+        if (field) sizeInput(el);
       });
     }
 
@@ -218,7 +234,6 @@
         span.className = 'w';
         span.dataset.i = String(i);
         span.textContent = given[i];
-        if (para.tokens[i].c) span.classList.add('ctx');
         if (verdict !== 'none') span.classList.add(verdict);
         el.parentNode.replaceChild(span, el);
       });
@@ -226,7 +241,7 @@
 
       var t = tally(para.tokens, given, state.usedHint);
       var lines = [
-        pad('changes found', (t.green) + ' of ' + t.needed),
+        pad('changes found', t.found + ' of ' + t.needed),
         pad('of your ' + t.changedByPlayer + ' changes',
           t.red + ' wrong' + (t.wrongReading ? '   (' + t.wrongReading + ' right word, wrong reading)' : '')),
         pad('common / reform', t.commonRight + ' / ' + t.reformRight),
@@ -248,9 +263,16 @@
       if (verdict === 'none') return '';
       if (verdict === 'green') return '“' + tok.t + '” becomes “' + tok.e + '”. Correct.';
       if (verdict === 'blue') {
-        return '“' + tok.t + '” is right here — this word has more than one euspelling and ' +
-          'the sentence wanted the traditional form' +
-          (tok.a ? '. The other reading is “' + tok.a.join('”, “') + '”.' : '.');
+        var other = tok.a ? ' The other reading is “' + tok.a.join('”, “') + '”.' : '';
+        // Blue covers both directions, so the sentence has to say which one this
+        // was: leaving the word alone and changing it are different decisions,
+        // and "correct" on its own tells the player nothing about why.
+        if (tok.e === tok.t) {
+          return '“' + tok.t + '” is right here — this word has more than one euspelling ' +
+            'and the sentence wanted the traditional form.' + other;
+        }
+        return '“' + tok.t + '” becomes “' + tok.e + '” here — this word has more than ' +
+          'one euspelling and the sentence decided which.' + other;
       }
       if (verdict === 'orange') return 'Missed: “' + tok.t + '” becomes “' + tok.e + '”.';
       var kind = redKind(tok, typed);
@@ -279,7 +301,7 @@
     // Grow or shrink an input to fit as the player edits it.
     passage.addEventListener('input', function (e) {
       if (e.target.tagName === 'INPUT' && e.target.classList.contains('w')) {
-        sizeInput(e.target, e.target.classList.contains('ctx'));
+        sizeInput(e.target);
       }
     });
 

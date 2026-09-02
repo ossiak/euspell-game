@@ -3,7 +3,17 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Euspell — the conversion game</title>
+<title>Euspell conversion game</title>
+<!--
+  A copy of the site favicon sits next to this file rather than the page relying
+  on the browser's fallback to /favicon.ico at the site root. Two reasons: the
+  fallback resolves to the disk root when the page is opened from file:// for an
+  offline demo, and a relative href is the only form that works both there and
+  when served -- the same reasoning as the absolute home link below, arrived at
+  from the other direction. The ?v= is here because browsers cache a favicon
+  harder than they cache anything else on the page.
+-->
+<link rel="icon" href="favicon.ico?v=2026-08-24" sizes="16x16 48x48 128x128">
 <!--
   The ?v= is a cache buster and has to be bumped whenever one of these files
   changes. The server sends Cache-Control: max-age=604800 for .css and .js but
@@ -12,7 +22,7 @@
   drops the query when resolving file://, so opening this page from disk still
   works.
 -->
-<link rel="stylesheet" href="game.css?v=2026-08-19">
+<link rel="stylesheet" href="game.css?v=2026-08-24">
 </head>
 <!--
   The extension must not touch this page. The passage is presented in traditional
@@ -29,9 +39,24 @@
   the only form that behaves in both places.
 -->
 <header class="masthead">
-  <a class="home" href="https://euspell.org/">&#8592;&#8194;Euspell</a>
-  <span class="what">The conversion game</span>
+  <a class="home" href="https://euspell.org/">Home</a>
+  <span class="what">The conversion game: guess the new spellings</span>
 </header>
+
+<!--
+  Help lives in the markup, not in game.js: mount() rewrites #game on every
+  Start, and this text never changes. The color names are set in the colors they
+  name, so the legend demonstrates itself -- and the word still says which is
+  which, so it survives grayscale and color blindness like the rest of the page.
+-->
+<p class="help">
+  Every word in the passage is editable: tap one to type the euspell form.
+  <b>Score</b> colors what you did: <span class="green">green</span> for a
+  correct change, <span class="blue">blue</span> for a reading you called right,
+  <span class="orange">orange</span> for a missed change, and
+  <span class="red">red</span> for a wrong change. Click any colored word to see
+  why.
+</p>
 
 <main id="game"></main>
 
@@ -41,8 +66,8 @@
   store listing, and it rules out ES modules and fetch(), which Chrome blocks on
   file://. paragraphs.js assigns a global; game.js reads it.
 -->
-<script src="paragraphs.js?v=2026-08-19"></script>
-<script src="game.js?v=2026-08-19"></script>
+<script src="paragraphs.js?v=2026-08-24"></script>
+<script src="game.js?v=2026-08-24"></script>
 <script>
   EuspellGame.mount(document.getElementById('game'), window.EUSPELL_PARAGRAPHS);
 </script>
