@@ -1,7 +1,7 @@
 ---
 id: 006
 title: The Romance of Mathematics
-author: Hampson
+author: Ditchfield, PH
 year: 1886
 death:
 source:

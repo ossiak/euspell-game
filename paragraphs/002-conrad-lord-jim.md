@@ -1,7 +1,7 @@
 ---
 id: 002
 title: Lord Jim
-author: Conrad, R
+author: Conrad, J
 year: 1900
 death:
 source:

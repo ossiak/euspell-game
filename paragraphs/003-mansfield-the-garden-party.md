@@ -1,7 +1,7 @@
 ---
 id: 003
 title: The Garden Party
-author: Mansfield
+author: Mansfield, K
 year: 1922
 death:
 source:

@@ -1,7 +1,7 @@
 ---
 id: 001
 title: The Idiot
-author: Dostoyevsky
+author: Dostoyevsky, FM
 year: 1869
 death:
 source:

@@ -1,7 +1,7 @@
 ---
 id: 005
 title: The Pit and the Pendulum
-author: Poe
+author: Poe, EA
 year: 1842
 death:
 source:

@@ -1,7 +1,7 @@
 ---
 id: 004
 title: The Tenant of Wildfell Hall
-author: Bronte
+author: Bronte, A
 year: 1848
 death:
 source:
